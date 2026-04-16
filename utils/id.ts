@@ -1,5 +1,5 @@
 const adjectives = [
-  'quick', 'happy', 'bright', 'calm', 'brave', 'eager', 'fancy', 'giant', 
+  'quick', 'happy', 'bright', 'calm', 'brave', 'eager', 'fancy', 'giant',
   'jolly', 'kind', 'lively', 'magic', 'noble', 'proud', 'silly', 'sunny',
   'tiny', 'wise', 'zesty', 'vivid'
 ];
@@ -14,26 +14,24 @@ const verbs = [
   'weaves', 'blooms', 'thrives', 'starts'
 ];
 
-/**
- * Generates a random, human-readable ID in the format "adjective-noun-verb".
- * Example: "happy-river-sings"
- */
+function secureRandomIndex(max: number): number {
+  const array = new Uint32Array(1);
+  crypto.getRandomValues(array);
+  return array[0] % max;
+}
+
 export const generateCallId = (): string => {
-  const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
-  const noun = nouns[Math.floor(Math.random() * nouns.length)];
-  const verb = verbs[Math.floor(Math.random() * verbs.length)];
+  const adj = adjectives[secureRandomIndex(adjectives.length)];
+  const noun = nouns[secureRandomIndex(nouns.length)];
+  const verb = verbs[secureRandomIndex(verbs.length)];
   return `${adj}-${noun}-${verb}`;
 };
 
-/**
- * A simple RFC4122 version 4 compliant UUID generator.
- * This is used to create a unique anonymous ID for each user without
- * requiring external dependencies.
- */
 export const generateUUID = (): string => {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 };

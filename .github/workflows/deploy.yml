@@ -6,42 +6,39 @@ on:
   pull_request:
     branches: [main, master]
 
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
+
     permissions:
       contents: read
       deployments: write
       id-token: write
-      checks: write
-      issues: write
       pull-requests: write
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-          
+
       - name: Install dependencies
-        run: npm install
-        
-      - name: Clear npm cache and reinstall
-        run: |
-          rm -rf node_modules package-lock.json
-          npm install
-        
+        run: npm ci
+
       - name: Run tests
-        run: npm test
-        
+        run: npx vitest run
+
       - name: Type check
-        run: npx tsc --noEmit || echo "TypeScript check completed with warnings"
-        
+        run: npx tsc --noEmit
+
       - name: Generate Firebase configuration
         run: node scripts/generate-firebase-config.cjs
         env:
@@ -55,9 +52,7 @@ jobs:
 
       - name: Build application
         run: npm run build
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          
+
       - name: Deploy to Firebase Hosting
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         uses: FirebaseExtended/action-hosting-deploy@v0
@@ -66,7 +61,7 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
           channelId: live
           projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
-          
+
       - name: Deploy Preview to Firebase Hosting
         if: github.event_name == 'pull_request'
         uses: FirebaseExtended/action-hosting-deploy@v0
@@ -77,23 +72,22 @@ jobs:
           projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
           expires: 7d
           disableComment: true
-          
+
       - name: Get Preview URL
         if: github.event_name == 'pull_request'
         id: preview
         run: |
           echo "preview_url=https://pr-${{ github.event.number }}--${{ secrets.FIREBASE_PROJECT_ID }}.web.app" >> $GITHUB_OUTPUT
-          
+
       - name: Comment PR with preview URL
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
             const previewUrl = '${{ steps.preview.outputs.preview_url }}';
-            
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `🚀 **Preview Deployment Ready!**\n\nYour changes are now live at: ${previewUrl}\n\nThis preview will expire in 7 days.`
+              body: `**Preview Deployment Ready**\n\nChanges are live at: ${previewUrl}\n\nThis preview expires in 7 days.`
             });

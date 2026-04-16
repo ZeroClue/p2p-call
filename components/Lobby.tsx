@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import VideoPlayer from './VideoPlayer';
 import { usePinchToZoom } from '../hooks/usePinchToZoom';
 import ResolutionSelector from './ResolutionSelector';
+import { MuteIcon, UnmuteIcon, VideoOnIcon, VideoOffIcon } from './icons';
 
 interface LobbyProps {
   localStream: MediaStream | null;
@@ -16,40 +17,6 @@ interface LobbyProps {
   onConfirm: () => void;
   onCancel: () => void;
 }
-
-const MuteIcon: React.FC<{className?: string}> = ({className}) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-    <line x1="12" x2="12" y1="19" y2="22"/>
-  </svg>
-);
-
-const UnmuteIcon: React.FC<{className?: string}> = ({className}) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <line x1="2" x2="22" y1="2" y2="22"/>
-    <path d="M18.89 13.23A7.12 7.12 0 0 1 19 12v-2"/>
-    <path d="M5 10v2a7 7 0 0 0 12 5"/>
-    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 .43 1.57"/>
-    <path d="M10.43 5.43A2.96 2.96 0 0 1 12 5a3 3 0 0 1 3 3v2.57"/>
-    <line x1="12" x2="12" y1="19" y2="22"/>
-  </svg>
-);
-
-const VideoOnIcon: React.FC<{className?: string}> = ({className}) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="m22 8-6 4 6 4V8Z"/>
-    <rect width="14" height="12" x="2" y="6" rx="2" ry="2"/>
-  </svg>
-);
-
-const VideoOffIcon: React.FC<{className?: string}> = ({className}) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M16 16v-3.27a4 4 0 0 0-1.27-2.83L8 4H2v16h13.73"/>
-    <path d="m22 8-6 4 6 4V8Z"/>
-    <line x1="2" x2="22" y1="2" y2="22"/>
-  </svg>
-);
 
 const Lobby: React.FC<LobbyProps> = ({
   localStream,

@@ -8,7 +8,7 @@
   }
 
   body {
-    @apply bg-gray-950 text-slate-200 antialiased font-sans;
+    @apply text-slate-200 antialiased font-sans;
     background-color: #0d1117;
     background-image:
       linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
@@ -33,7 +33,7 @@
   .custom-scrollbar::-webkit-scrollbar-thumb {
     background-color: rgba(107, 114, 128, 0.5);
     border-radius: 20px;
-    border: transparent;
+    border-color: transparent;
   }
 
   .animate-fade-in-down {

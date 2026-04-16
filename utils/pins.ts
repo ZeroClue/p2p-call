@@ -1,4 +1,4 @@
-import { PinnedEntry } from '../types';
+import { PinnedEntry } from '@/types';
 
 const PINNED_KEY = 'p2p-call-pins';
 
