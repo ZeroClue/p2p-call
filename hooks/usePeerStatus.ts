@@ -2,11 +2,15 @@ import { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { PeerStatus } from '../types';
 
+interface FirebaseSnapshot {
+  val(): unknown;
+}
+
 export const usePeerStatus = (peerIds: string[]) => {
   const [peerStatus, setPeerStatus] = useState<{ [key: string]: PeerStatus }>({});
 
   useEffect(() => {
-    const listeners: { [key: string]: (snapshot: any) => void } = {};
+    const listeners: { [key: string]: (snapshot: FirebaseSnapshot) => void } = {};
 
     setPeerStatus(prev => {
       const next: { [key: string]: PeerStatus } = {};
@@ -19,8 +23,8 @@ export const usePeerStatus = (peerIds: string[]) => {
     peerIds.forEach(id => {
       const peerStatusRef = db.ref(`/status/${id}`);
 
-      const listener = (snapshot: any) => {
-        const status = snapshot.val();
+      const listener = (snapshot: FirebaseSnapshot) => {
+        const status = snapshot.val() as PeerStatus | null;
         if (status) {
           setPeerStatus(prev => ({
             ...prev,
