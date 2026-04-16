@@ -14,7 +14,7 @@ const RING_TIMEOUT_MS = 30000;
  */
 interface DatabaseReference {
   on(event: string, callback: (snapshot: { val(): unknown }) => void): void;
-  off(event?: string, callback?: (...args: unknown[]) => void): void;
+  off(event?: string, callback?: (snapshot: { val(): unknown }) => void): void;
   set(data: unknown): Promise<void>;
   update(data: Record<string, unknown>): Promise<void>;
   remove(): Promise<void>;
@@ -29,7 +29,7 @@ interface DatabaseReference {
 interface TrackedListener {
   ref: DatabaseReference;
   event: string;
-  callback: (...args: unknown[]) => void;
+  callback: (snapshot: { val(): unknown }) => void;
 }
 
 /**
@@ -88,7 +88,7 @@ export const useSignaling = (
    * Add a tracked listener that will be cleaned up on cleanupSignaling.
    */
   const addTrackedListener = useCallback(
-    (ref: DatabaseReference, event: string, callback: (...args: unknown[]) => void) => {
+    (ref: DatabaseReference, event: string, callback: (snapshot: { val(): unknown }) => void) => {
       ref.on(event, callback);
       activeListenersRef.current.push({ ref, event, callback });
     },
