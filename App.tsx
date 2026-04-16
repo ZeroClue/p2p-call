@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useWebRTC } from './hooks/useWebRTC';
 import { useAuth } from './hooks/useAuth';
+import { useCallHistory } from './hooks/useCallHistory';
+import { useIncomingCall } from './hooks/useIncomingCall';
+import { useCallNotifications } from './hooks/useCallNotifications';
 import { CallState, CallHistoryEntry, PinnedEntry, CallStats, IncomingCall, PeerStatus, ChatMessage } from './types';
 import VideoPlayer from './components/VideoPlayer';
 import Controls from './components/Controls';
@@ -15,12 +18,7 @@ import MediaErrorScreen from './components/MediaErrorScreen';
 import ChatPanel from './components/ChatPanel';
 import FloatingVideo from './components/FloatingVideo';
 import LocalVideoPreview from './components/LocalVideoPreview';
-import { playIncomingSound, playConnectedSound, playEndedSound, playRingingSound, stopRingingSound } from './utils/sounds';
-import { getHistory, saveHistory } from './utils/history';
-import { getPinned, savePinned } from './utils/pins';
 import { getUserId } from './utils/user';
-import { db } from './firebase';
-import { formatTime } from './utils/format';
 import { useDraggable } from './hooks/useDraggable';
 import { usePresence } from './hooks/usePresence';
 import { usePeerStatus } from './hooks/usePeerStatus';
@@ -28,9 +26,6 @@ import { usePeerStatus } from './hooks/usePeerStatus';
 const App: React.FC = () => {
     const { isAuthenticated, isAuthenticating, authError } = useAuth();
     const [userId] = useState(getUserId());
-    const [history, setHistory] = useState<CallHistoryEntry[]>(() => getHistory());
-    const [pinned, setPinned] = useState<PinnedEntry[]>(() => getPinned());
-    const [incomingCall, setIncomingCall] = useState<IncomingCall | null>(null);
     const [activeTab, setActiveTab] = useState<'new' | 'recent' | 'pinned' | 'tools' | 'about'>('new');
     const [joinInput, setJoinInput] = useState('');
     const [joinInputError, setJoinInputError] = useState<string | null>(null);
@@ -49,6 +44,15 @@ const App: React.FC = () => {
         setOnChatMessage, sendMessage,
     } = useWebRTC('720p');
 
+    const callHistory = useCallHistory();
+    const { history, pinned } = callHistory;
+
+    const incomingCallHook = useIncomingCall(userId, callState, setCallState);
+    const { incomingCall, handleAcceptCall: handleAcceptCallIncoming, handleDeclineCall: handleDeclineCallIncoming } = incomingCallHook;
+
+    const notifications = useCallNotifications(callState, callId, peerId, pinned, history, callHistory.addHistoryEntry);
+    const { callDuration } = notifications;
+
     usePresence(userId);
     const peerIdsToWatch = useMemo(() => pinned.map(p => p.peerId).filter((id): id is string => !!id), [pinned]);
     const peerStatus = usePeerStatus(peerIdsToWatch);
@@ -56,19 +60,12 @@ const App: React.FC = () => {
     const controlsRef = useRef<HTMLDivElement>(null);
     const { onPointerDown: onControlsPointerDown } = useDraggable(controlsRef);
 
-    const [callDuration, setCallDuration] = useState(0);
-    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-    const callStartTimeRef = useRef<number | null>(null);
-    const callDetailsForHistoryRef = useRef<{ callId: string; peerId?: string; alias?: string } | null>(null);
-    const hasConnectedOnceForChatRef = useRef(false);
-
     const validateCallId = useCallback((id: string): boolean => {
         const trimmedId = id.trim();
         if (!trimmedId) {
             setJoinInputError(null);
-            return true; // Don't show an error for an empty field until submission is attempted
+            return true;
         }
-        // expecting adjective-noun-verb
         const pattern = /^[a-z]+-[a-z]+-[a-z]+$/;
         if (!pattern.test(trimmedId)) {
             setJoinInputError('Invalid format. Expected: word-word-word');
@@ -87,87 +84,6 @@ const App: React.FC = () => {
         return () => window.removeEventListener('beforeinstallprompt', handler);
     }, []);
 
-    useEffect(() => {
-        if (!userId) return;
-        const incomingCallRef = db.ref(`users/${userId}/incomingCall`);
-        const listener = (snapshot: any) => {
-            const call = snapshot.val();
-            if (call) {
-                if ([CallState.IDLE, CallState.ENDED, CallState.DECLINED].includes(callState)) {
-                    setIncomingCall(call);
-                    setCallState(CallState.INCOMING_CALL);
-                }
-            } else {
-                setIncomingCall(null);
-                if (callState === CallState.INCOMING_CALL) {
-                    setCallState(CallState.IDLE);
-                }
-            }
-        };
-        incomingCallRef.on('value', listener);
-        return () => incomingCallRef.off('value', listener);
-    }, [userId, callState, setCallState]);
-
-    useEffect(() => {
-        const findAlias = (pId: string | null) => {
-            if (!pId) return undefined;
-            const pinnedContact = pinned.find(p => p.peerId === pId);
-            if (pinnedContact?.alias) return pinnedContact.alias;
-            const historyContact = [...history].sort((a,b) => b.timestamp - a.timestamp).find(h => h.peerId === pId);
-            return historyContact?.alias;
-        };
-
-        switch (callState) {
-            case CallState.INCOMING_CALL:
-                playIncomingSound();
-                break;
-            case CallState.RINGING:
-                playRingingSound();
-                break;
-            case CallState.CONNECTED:
-                stopRingingSound();
-                playConnectedSound();
-                 // Only hide the chat panel on the initial connection, not on reconnects.
-                if (!hasConnectedOnceForChatRef.current) {
-                    setIsChatVisible(false);
-                    hasConnectedOnceForChatRef.current = true;
-                }
-                callStartTimeRef.current = Date.now();
-                if (callId) {
-                    callDetailsForHistoryRef.current = { callId, peerId: peerId || undefined, alias: peerId ? findAlias(peerId) : undefined };
-                }
-                setCallDuration(0);
-                timerRef.current = setInterval(() => {
-                    setCallDuration(prev => prev + 1);
-                }, 1000);
-                break;
-            case CallState.ENDED:
-            case CallState.DECLINED:
-                stopRingingSound();
-                playEndedSound();
-                if (timerRef.current) clearInterval(timerRef.current);
-                if (callStartTimeRef.current && callDetailsForHistoryRef.current) {
-                    const duration = Math.floor((Date.now() - callStartTimeRef.current) / 1000);
-                    const newHistory: CallHistoryEntry = {
-                        ...callDetailsForHistoryRef.current,
-                        timestamp: Date.now(),
-                        duration,
-                    };
-                    setHistory(prev => [newHistory, ...prev]);
-                }
-                setCallDuration(0);
-                timerRef.current = null;
-                callStartTimeRef.current = null;
-                callDetailsForHistoryRef.current = null;
-                hasConnectedOnceForChatRef.current = false; // Reset for the next call
-                break;
-            case CallState.IDLE:
-                stopRingingSound();
-                break;
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [callState, callId, peerId]);
-    
     useEffect(() => {
         if (callState === CallState.CONNECTED) {
             setOnChatMessage(
@@ -189,24 +105,13 @@ const App: React.FC = () => {
         }
     }, [callState]);
 
-    useEffect(() => {
-        saveHistory(history);
-    }, [history]);
-
-    useEffect(() => {
-        savePinned(pinned);
-    }, [pinned]);
-    
     const handleSendMessage = useCallback((text: string) => {
         sendMessage(text);
         setMessages(prev => [...prev, { text, sender: 'me', timestamp: Date.now() }]);
     }, [sendMessage]);
 
     const handleToggleChat = useCallback(() => {
-        // Toggle the visibility of the chat panel.
         setIsChatVisible(isCurrentlyVisible => {
-            // If the chat is about to be shown (i.e., it's currently hidden),
-            // clear any unread message notifications.
             if (!isCurrentlyVisible) {
                 setUnreadMessageCount(0);
             }
@@ -241,19 +146,13 @@ const App: React.FC = () => {
     }, [enterLobby]);
 
     const handleAcceptCall = useCallback(() => {
-        if (incomingCall) {
-            joinCall(incomingCall.callId);
-        }
-    }, [incomingCall, joinCall]);
+        handleAcceptCallIncoming(joinCall);
+    }, [handleAcceptCallIncoming, joinCall]);
 
     const handleDeclineCall = useCallback(() => {
-        if (incomingCall) {
-            declineCall(incomingCall.callId);
-        }
-        setIncomingCall(null);
-        reset();
-    }, [incomingCall, declineCall, reset]);
-    
+        handleDeclineCallIncoming(declineCall, reset);
+    }, [handleDeclineCallIncoming, declineCall, reset]);
+
     const handleHangUp = useCallback(() => {
         hangUp();
     }, [hangUp]);
@@ -285,43 +184,12 @@ const App: React.FC = () => {
         reset();
     }, [reset]);
 
-    const handleUpdateHistoryAlias = useCallback((timestamp: number, alias: string) => {
-        setHistory(prev => prev.map(h => h.timestamp === timestamp ? { ...h, alias } : h));
-    }, []);
-
-    const handleDeleteHistory = useCallback((timestamp: number) => {
-        setHistory(prev => prev.filter(h => h.timestamp !== timestamp));
-    }, []);
-
-    const handleTogglePin = useCallback((entry: CallHistoryEntry) => {
-        setPinned(prev => {
-            if (prev.some(p => p.callId === entry.callId)) {
-                return prev.filter(p => p.callId !== entry.callId);
-            }
-            const { callId, alias, peerId } = entry;
-            return [{ callId, alias, peerId }, ...prev];
-        });
-    }, []);
-    
-    const handleUpdatePinAlias = useCallback((callId: string, alias: string) => {
-        setPinned(prev => prev.map(p => p.callId === callId ? { ...p, alias } : p));
-    }, []);
-
-    const handleUnpin = useCallback((callId: string) => {
-        setPinned(prev => prev.filter(p => p.callId !== callId));
-    }, []);
-
-    const handleRestoreData = useCallback((data: { history: CallHistoryEntry[], pinned: PinnedEntry[] }) => {
-        setHistory(data.history);
-        setPinned(data.pinned);
-    }, []);
-
     const handleInstallClick = useCallback(() => {
         if (installPrompt) {
             installPrompt.prompt();
         }
     }, [installPrompt]);
-    
+
     const callerDisplayName = useMemo(() => {
         if (!incomingCall) return 'Someone';
         const pinnedContact = pinned.find(p => p.peerId === incomingCall.from);
@@ -330,10 +198,10 @@ const App: React.FC = () => {
         if (historyContact?.alias) return historyContact.alias;
         return incomingCall.callerAlias || incomingCall.from.substring(0, 8);
     }, [incomingCall, pinned, history]);
-    
+
     const isConnecting = [CallState.CREATING_OFFER, CallState.WAITING_FOR_ANSWER, CallState.RINGING, CallState.JOINING, CallState.CREATING_ANSWER].includes(callState);
     const showMainPage = [CallState.IDLE, CallState.ENDED, CallState.DECLINED].includes(callState);
-    
+
     const tabs: { id: 'new' | 'recent' | 'pinned' | 'tools' | 'about', label: string }[] = [
         { id: 'new', label: 'New Call' },
         { id: 'recent', label: 'Recent' },
@@ -341,7 +209,7 @@ const App: React.FC = () => {
         { id: 'tools', label: 'Tools' },
         { id: 'about', label: 'About' },
     ];
-    
+
     const handleStartNewCallFlow = useCallback(() => {
         setJoinInput('');
         setJoinInputError(null);
@@ -365,7 +233,6 @@ const App: React.FC = () => {
         validateCallId(value);
     }, [validateCallId]);
 
-
     const renderTabContent = () => {
         switch(activeTab) {
             case 'new':
@@ -377,7 +244,7 @@ const App: React.FC = () => {
                         >
                             Start a New Call
                         </button>
-                        
+
                         <div className="w-full flex items-center">
                             <div className="flex-grow border-t border-gray-700"></div>
                             <span className="flex-shrink mx-4 text-gray-500 text-sm font-semibold">OR</span>
@@ -415,11 +282,11 @@ const App: React.FC = () => {
                     </div>
                 );
             case 'recent':
-                return <CallHistory history={history} onRejoin={handleRejoin} onUpdateAlias={handleUpdateHistoryAlias} onTogglePin={handleTogglePin} pinnedIds={new Set(pinned.map(p => p.callId))} onDelete={handleDeleteHistory} />;
+                return <CallHistory history={history} onRejoin={handleRejoin} onUpdateAlias={callHistory.updateHistoryAlias} onTogglePin={callHistory.togglePin} pinnedIds={new Set(pinned.map(p => p.callId))} onDelete={callHistory.deleteHistory} />;
             case 'pinned':
-                return <PinnedCalls pins={pinned} peerStatus={peerStatus} onCall={handleCallPinned} onUpdateAlias={handleUpdatePinAlias} onUnpin={handleUnpin} />;
+                return <PinnedCalls pins={pinned} peerStatus={peerStatus} onCall={handleCallPinned} onUpdateAlias={callHistory.updatePinAlias} onUnpin={callHistory.unpin} />;
             case 'tools':
-                return <Tools userId={userId} onRestore={handleRestoreData} canInstall={!!installPrompt} onInstallClick={handleInstallClick} />;
+                return <Tools userId={userId} onRestore={callHistory.restoreData} canInstall={!!installPrompt} onInstallClick={handleInstallClick} />;
             case 'about':
                 return <About />;
         }
@@ -499,7 +366,7 @@ const App: React.FC = () => {
                         <h1 className="text-5xl md:text-6xl font-extrabold text-white">Simple, Secure Video Calls</h1>
                         <p className="text-gray-400 mt-2">Connect directly with anyone, anywhere. No accounts, no tracking, just a private peer-to-peer connection.</p>
                     </div>
-                    
+
                     <div className="w-full max-w-2xl mt-8 relative glass-container-glow">
                         <div className="relative glass-card-background backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden">
                             <div className="border-b border-gray-200/10 px-4 md:px-8">
@@ -559,7 +426,7 @@ const App: React.FC = () => {
                         isVideoOff={isVideoOff}
                     />
                     <Controls ref={controlsRef} onPointerDown={onControlsPointerDown} onToggleMute={toggleMute} onToggleVideo={toggleVideo} onHangUp={handleHangUp} isMuted={isMuted} isVideoOff={isVideoOff} onToggleChat={handleToggleChat} unreadMessageCount={unreadMessageCount} />
-                    <ChatPanel 
+                    <ChatPanel
                         isVisible={isChatVisible}
                         messages={messages}
                         onSendMessage={handleSendMessage}
