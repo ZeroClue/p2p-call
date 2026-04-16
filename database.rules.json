@@ -3,7 +3,7 @@
     "calls": {
       ".indexOn": ["callerId", "joinerId"],
       "$callId": {
-        ".read": "auth != null && (!data.exists() || data.child('callerId').val() === auth.uid || data.child('joinerId').val() === auth.uid)",
+        ".read": "auth != null && (!data.exists() || data.child('callerId').val() === auth.uid || data.child('joinerId').val() === auth.uid || !data.hasChild('joinerId'))",
         ".write": "auth != null && (!data.exists() && newData.hasChildren(['callerId']) || data.child('callerId').val() === auth.uid || data.child('joinerId').val() === auth.uid || (data.exists() && !data.hasChild('answer') && newData.hasChild('answer')))",
         ".validate": "newData.hasChildren(['callerId'])",
         "callerId": {
@@ -16,10 +16,10 @@
           ".validate": "newData.isString()"
         },
         "offer": {
-          ".validate": "newData.isString()"
+          ".validate": "newData.hasChildren(['sdp', 'type'])"
         },
         "answer": {
-          ".validate": "newData.isString()"
+          ".validate": "newData.hasChildren(['sdp', 'type'])"
         },
         "encryptionKey": {
           ".validate": "newData.hasChildren()"
@@ -42,7 +42,7 @@
     "users": {
       "$userId": {
         ".read": "auth != null && auth.uid === $userId",
-        ".write": "auth != null && auth.uid === $userId",
+        ".write": "auth != null && (auth.uid === $userId || newData.hasChild('incomingCall'))",
         "incomingCall": {
           ".validate": "newData.hasChildren(['from', 'callId'])",
           "from": {

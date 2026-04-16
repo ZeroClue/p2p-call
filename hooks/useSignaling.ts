@@ -390,6 +390,7 @@ export const useSignaling = (
         } else {
           // No offer exists, become the caller instead
           console.log(`Call ID "${id}" is available. Initializing a new call.`);
+          isOperationInProgressRef.current = false;
           await initiateCall(id, pc, stream, enableE2EE, false);
         }
       } catch (error) {

@@ -197,7 +197,7 @@ export const useWebRTC = (initialResolution: string) => {
           }
         } else if (pc.connectionState === 'failed') {
           console.error('Peer connection failed. Hanging up.');
-          hangUp();
+          hangUpRef.current();
         } else if (pc.connectionState === 'disconnected') {
           // Attempt reconnection
           setIsE2EEActive(false);
@@ -238,7 +238,7 @@ export const useWebRTC = (initialResolution: string) => {
                   await signaling.callDocRef.current.update({ offer });
                 } catch (error) {
                   console.error('Failed to restart ICE connection:', error);
-                  hangUp();
+                  hangUpRef.current();
                 }
               };
 
@@ -249,7 +249,7 @@ export const useWebRTC = (initialResolution: string) => {
             callStateRef.current !== CallState.ENDED
           ) {
             console.log('Reconnection failed after maximum attempts.');
-            hangUp();
+            hangUpRef.current();
           }
         } else if (pc.connectionState === 'closed') {
           setIsE2EEActive(false);
@@ -390,6 +390,9 @@ export const useWebRTC = (initialResolution: string) => {
     cleanUp();
     setCallState(CallState.ENDED);
   }, [cleanUp]);
+
+  const hangUpRef = useRef(hangUp);
+  useEffect(() => { hangUpRef.current = hangUp; }, [hangUp]);
 
   const reset = useCallback(() => {
     cleanUp();
