@@ -4,9 +4,12 @@ let ringingInterval: ReturnType<typeof setInterval> | null = null;
 const initAudioContext = () => {
   if (!audioCtx) {
     try {
-      audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    } catch (e) {
-      console.error("Web Audio API is not supported in this browser");
+      audioCtx = new (
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+      )();
+    } catch (_e) {
+      console.error('Web Audio API is not supported in this browser');
     }
   }
   return audioCtx;
@@ -21,7 +24,7 @@ const playTone = (freq: number, duration: number, startTime: number = 0) => {
   if (ctx.state === 'suspended') {
     ctx.resume();
   }
-  
+
   const oscillator = ctx.createOscillator();
   const gainNode = ctx.createGain();
 
@@ -30,7 +33,7 @@ const playTone = (freq: number, duration: number, startTime: number = 0) => {
 
   oscillator.type = 'sine';
   oscillator.frequency.setValueAtTime(freq, ctx.currentTime);
-  
+
   const startVol = 0.15;
   gainNode.gain.setValueAtTime(startVol, ctx.currentTime + startTime);
   // Fade out over the last 80% of the tone's duration for a softer sound
@@ -42,7 +45,7 @@ const playTone = (freq: number, duration: number, startTime: number = 0) => {
 
 export const playIncomingSound = () => {
   playTone(600, 0.15, 0);
-  playTone(800, 0.20, 0.2);
+  playTone(800, 0.2, 0.2);
 };
 
 export const playConnectedSound = () => {
@@ -57,18 +60,18 @@ export const playEndedSound = () => {
 };
 
 export const playRingingSound = () => {
-    stopRingingSound(); // Ensure no multiple intervals are running
-    const playSequence = () => {
-        playTone(600, 0.15, 0);
-        playTone(800, 0.20, 0.2);
-    };
-    playSequence(); // Play immediately
-    ringingInterval = setInterval(playSequence, 2000); // Repeat every 2 seconds
+  stopRingingSound(); // Ensure no multiple intervals are running
+  const playSequence = () => {
+    playTone(600, 0.15, 0);
+    playTone(800, 0.2, 0.2);
+  };
+  playSequence(); // Play immediately
+  ringingInterval = setInterval(playSequence, 2000); // Repeat every 2 seconds
 };
 
 export const stopRingingSound = () => {
-    if (ringingInterval) {
-        clearInterval(ringingInterval);
-        ringingInterval = null;
-    }
+  if (ringingInterval) {
+    clearInterval(ringingInterval);
+    ringingInterval = null;
+  }
 };

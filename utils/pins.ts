@@ -17,7 +17,7 @@ export const getPinned = (): PinnedEntry[] => {
       }
     }
   } catch (error) {
-    console.error("Failed to parse pinned calls from localStorage", error);
+    console.error('Failed to parse pinned calls from localStorage', error);
     localStorage.removeItem(PINNED_KEY);
   }
   return [];
@@ -32,6 +32,6 @@ export const savePinned = (pins: PinnedEntry[]): void => {
     const pinnedJson = JSON.stringify(pins);
     localStorage.setItem(PINNED_KEY, pinnedJson);
   } catch (error) {
-    console.error("Failed to save pinned calls to localStorage", error);
+    console.error('Failed to save pinned calls to localStorage', error);
   }
 };

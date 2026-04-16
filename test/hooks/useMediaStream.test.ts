@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useMediaStream } from '../../hooks/useMediaStream';
 
 describe('useMediaStream', () => {
@@ -66,7 +66,7 @@ describe('useMediaStream', () => {
 
       expect(stream).toBeNull();
       expect(result.current.errorMessage).toBe(
-        'Permission denied. Please allow this site to access your camera and microphone in your browser settings.'
+        'Permission denied. Please allow this site to access your camera and microphone in your browser settings.',
       );
     });
 
@@ -83,7 +83,7 @@ describe('useMediaStream', () => {
 
       expect(stream).toBeNull();
       expect(result.current.errorMessage).toBe(
-        'No camera or microphone found. Please ensure your devices are connected and enabled.'
+        'No camera or microphone found. Please ensure your devices are connected and enabled.',
       );
     });
 
@@ -100,7 +100,7 @@ describe('useMediaStream', () => {
 
       expect(stream).toBeNull();
       expect(result.current.errorMessage).toBe(
-        'The selected resolution (1080p) is not supported by your device. Try a lower quality.'
+        'The selected resolution (1080p) is not supported by your device. Try a lower quality.',
       );
     });
 
@@ -117,18 +117,13 @@ describe('useMediaStream', () => {
 
       expect(stream).toBeNull();
       expect(result.current.errorMessage).toBe(
-        'Could not access camera and microphone. Please check your system settings and browser permissions.'
+        'Could not access camera and microphone. Please check your system settings and browser permissions.',
       );
     });
 
     it('should stop existing tracks before creating new stream', async () => {
       const mockOldTrack1 = { enabled: true, stop: vi.fn() };
       const mockOldTrack2 = { enabled: true, stop: vi.fn() };
-      const mockOldStream = {
-        getTracks: vi.fn(() => [mockOldTrack1, mockOldTrack2]),
-        getAudioTracks: vi.fn(() => [mockOldTrack1]),
-        getVideoTracks: vi.fn(() => [mockOldTrack2]),
-      };
 
       mockGetUserMedia.mockResolvedValue(mockStream);
 
@@ -152,7 +147,10 @@ describe('useMediaStream', () => {
 
       // Mock the getTracks to return the old tracks
       if (firstStream) {
-        firstStream.getTracks = vi.fn(() => [mockOldTrack1, mockOldTrack2]);
+        firstStream.getTracks = vi.fn(() => [
+          mockOldTrack1,
+          mockOldTrack2,
+        ]) as unknown as () => MediaStreamTrack[];
       }
 
       // Second call
@@ -479,7 +477,7 @@ describe('useMediaStream', () => {
       const { result } = renderHook(() => useMediaStream('720p'));
 
       await act(async () => {
-        await result.current.initMedia('unknown' as any);
+        await result.current.initMedia('unknown' as unknown as string);
       });
 
       expect(mockGetUserMedia).toHaveBeenCalledWith({

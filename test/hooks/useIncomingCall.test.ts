@@ -22,9 +22,11 @@ describe('useIncomingCall', () => {
 
   beforeEach(() => {
     listenerCallback = null;
-    mockOn = vi.fn((event: string, callback: (snapshot: { val: () => IncomingCall | null }) => void) => {
-      listenerCallback = callback;
-    });
+    mockOn = vi.fn(
+      (event: string, callback: (snapshot: { val: () => IncomingCall | null }) => void) => {
+        listenerCallback = callback;
+      },
+    );
     mockOff = vi.fn();
     mockRef = vi.fn(() => ({ on: mockOn, off: mockOff }));
     (db.ref as ReturnType<typeof vi.fn>).mockImplementation(mockRef);
@@ -36,17 +38,13 @@ describe('useIncomingCall', () => {
 
   it('initializes with null incomingCall', () => {
     const setCallState = vi.fn();
-    const { result } = renderHook(() =>
-      useIncomingCall('user-123', CallState.IDLE, setCallState)
-    );
+    const { result } = renderHook(() => useIncomingCall('user-123', CallState.IDLE, setCallState));
     expect(result.current.incomingCall).toBeNull();
   });
 
   it('sets incoming call when Firebase listener receives call', async () => {
     const setCallState = vi.fn();
-    renderHook(() =>
-      useIncomingCall('user-123', CallState.IDLE, setCallState)
-    );
+    renderHook(() => useIncomingCall('user-123', CallState.IDLE, setCallState));
 
     const incomingCall: IncomingCall = {
       from: 'caller-456',
@@ -65,9 +63,7 @@ describe('useIncomingCall', () => {
 
   it('does not set incoming call when not in IDLE state', async () => {
     const setCallState = vi.fn();
-    renderHook(() =>
-      useIncomingCall('user-123', CallState.CONNECTED, setCallState)
-    );
+    renderHook(() => useIncomingCall('user-123', CallState.CONNECTED, setCallState));
 
     const incomingCall: IncomingCall = {
       from: 'caller-456',
@@ -85,7 +81,7 @@ describe('useIncomingCall', () => {
   it('clears incoming call when Firebase listener receives null', async () => {
     const setCallState = vi.fn();
     const { result } = renderHook(() =>
-      useIncomingCall('user-123', CallState.INCOMING_CALL, setCallState)
+      useIncomingCall('user-123', CallState.INCOMING_CALL, setCallState),
     );
 
     await act(async () => {
@@ -100,13 +96,13 @@ describe('useIncomingCall', () => {
 
   it('handleAcceptCall calls joinCallFn with incoming call ID', () => {
     const setCallState = vi.fn();
-    const { result } = renderHook(() =>
-      useIncomingCall('user-123', CallState.IDLE, setCallState)
-    );
+    const { result } = renderHook(() => useIncomingCall('user-123', CallState.IDLE, setCallState));
 
     // Simulate receiving an incoming call
     act(() => {
-      listenerCallback!({ val: () => ({ from: 'caller-456', callId: 'test-call-123', callerAlias: 'Alice' }) });
+      listenerCallback!({
+        val: () => ({ from: 'caller-456', callId: 'test-call-123', callerAlias: 'Alice' }),
+      });
     });
 
     const joinCallFn = vi.fn();
@@ -119,13 +115,13 @@ describe('useIncomingCall', () => {
 
   it('handleDeclineCall calls declineCallFn and clears incoming call', () => {
     const setCallState = vi.fn();
-    const { result } = renderHook(() =>
-      useIncomingCall('user-123', CallState.IDLE, setCallState)
-    );
+    const { result } = renderHook(() => useIncomingCall('user-123', CallState.IDLE, setCallState));
 
     // Simulate receiving an incoming call
     act(() => {
-      listenerCallback!({ val: () => ({ from: 'caller-456', callId: 'test-call-123', callerAlias: 'Alice' }) });
+      listenerCallback!({
+        val: () => ({ from: 'caller-456', callId: 'test-call-123', callerAlias: 'Alice' }),
+      });
     });
 
     const declineCallFn = vi.fn().mockResolvedValue(undefined);
@@ -141,9 +137,7 @@ describe('useIncomingCall', () => {
 
   it('cleans up Firebase listener on unmount', () => {
     const setCallState = vi.fn();
-    const { unmount } = renderHook(() =>
-      useIncomingCall('user-123', CallState.IDLE, setCallState)
-    );
+    const { unmount } = renderHook(() => useIncomingCall('user-123', CallState.IDLE, setCallState));
 
     unmount();
 

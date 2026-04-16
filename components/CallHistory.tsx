@@ -1,7 +1,17 @@
 import React, { useState } from 'react';
 import { CallHistoryEntry } from '../types';
 import { formatDate, formatTime } from '../utils/format';
-import { RejoinIcon, EditIcon, CheckIcon, CancelIcon, PinIcon, PinnedIcon, UserIcon, HistoryIcon, DeleteIcon } from './icons';
+import {
+  RejoinIcon,
+  EditIcon,
+  CheckIcon,
+  CancelIcon,
+  PinIcon,
+  PinnedIcon,
+  UserIcon,
+  HistoryIcon,
+  DeleteIcon,
+} from './icons';
 
 interface CallHistoryProps {
   history: CallHistoryEntry[];
@@ -12,18 +22,27 @@ interface CallHistoryProps {
   onDelete: (timestamp: number) => void;
 }
 
-const CallHistory: React.FC<CallHistoryProps> = ({ history, onRejoin, onUpdateAlias, onTogglePin, pinnedIds, onDelete }) => {
+const CallHistory: React.FC<CallHistoryProps> = ({
+  history,
+  onRejoin,
+  onUpdateAlias,
+  onTogglePin,
+  pinnedIds,
+  onDelete,
+}) => {
   const [editingTimestamp, setEditingTimestamp] = useState<number | null>(null);
   const [aliasInput, setAliasInput] = useState('');
   const [animatingPin, setAnimatingPin] = useState<string | null>(null);
 
   if (history.length === 0) {
     return (
-        <div className="w-full text-center py-10 px-4">
-            <HistoryIcon className="w-12 h-12 mx-auto text-gray-600" />
-            <h3 className="text-lg font-semibold text-gray-300 mt-4">No Recent Calls</h3>
-            <p className="text-sm text-gray-500 mt-2">Your call history will appear here after you make a call.</p>
-        </div>
+      <div className="w-full text-center py-10 px-4">
+        <HistoryIcon className="w-12 h-12 mx-auto text-gray-600" />
+        <h3 className="text-lg font-semibold text-gray-300 mt-4">No Recent Calls</h3>
+        <p className="text-sm text-gray-500 mt-2">
+          Your call history will appear here after you make a call.
+        </p>
+      </div>
     );
   }
 
@@ -53,8 +72,8 @@ const CallHistory: React.FC<CallHistoryProps> = ({ history, onRejoin, onUpdateAl
 
   const handlePinClick = (entry: CallHistoryEntry) => {
     if (!pinnedIds.has(entry.callId)) {
-        setAnimatingPin(entry.callId);
-        setTimeout(() => setAnimatingPin(null), 400);
+      setAnimatingPin(entry.callId);
+      setTimeout(() => setAnimatingPin(null), 400);
     }
     onTogglePin(entry);
   };
@@ -65,8 +84,8 @@ const CallHistory: React.FC<CallHistoryProps> = ({ history, onRejoin, onUpdateAl
         {history.map((call, index) => {
           const isPinned = pinnedIds.has(call.callId);
           return (
-            <div 
-              key={`${call.callId}-${call.timestamp}`} 
+            <div
+              key={`${call.callId}-${call.timestamp}`}
               className="bg-gray-800/50 p-3 rounded-lg flex items-center justify-between gap-3 min-h-[70px] hover:bg-gray-700/80 transition-colors duration-200 border border-gray-700 animate-fade-in-down"
               style={{ animationDelay: `${index * 50}ms`, opacity: 0 }}
               role="listitem"
@@ -109,7 +128,10 @@ const CallHistory: React.FC<CallHistoryProps> = ({ history, onRejoin, onUpdateAl
                       </div>
                     )}
                     <div className="truncate flex-grow">
-                      <p className="font-semibold text-base text-gray-100 truncate" title={call.alias || call.callId}>
+                      <p
+                        className="font-semibold text-base text-gray-100 truncate"
+                        title={call.alias || call.callId}
+                      >
                         {call.alias || call.callId}
                       </p>
                       <p className="text-xs text-gray-400 truncate">
@@ -120,12 +142,22 @@ const CallHistory: React.FC<CallHistoryProps> = ({ history, onRejoin, onUpdateAl
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <button
-                        onClick={() => handlePinClick(call)}
-                        className={`p-2 rounded-full transition-colors ${isPinned ? 'text-yellow-400 hover:text-yellow-300' : 'text-gray-400 hover:text-white'} hover:bg-gray-700`}
-                        aria-label={isPinned ? `Unpin call with ID ${call.callId}` : `Pin call with ID ${call.callId}`}
-                        title={isPinned ? 'Unpin' : 'Pin'}
+                      onClick={() => handlePinClick(call)}
+                      className={`p-2 rounded-full transition-colors ${isPinned ? 'text-yellow-400 hover:text-yellow-300' : 'text-gray-400 hover:text-white'} hover:bg-gray-700`}
+                      aria-label={
+                        isPinned
+                          ? `Unpin call with ID ${call.callId}`
+                          : `Pin call with ID ${call.callId}`
+                      }
+                      title={isPinned ? 'Unpin' : 'Pin'}
                     >
-                        {isPinned ? <PinnedIcon className="w-5 h-5" /> : <PinIcon className={`w-5 h-5 ${animatingPin === call.callId ? 'animate-pop' : ''}`} />}
+                      {isPinned ? (
+                        <PinnedIcon className="w-5 h-5" />
+                      ) : (
+                        <PinIcon
+                          className={`w-5 h-5 ${animatingPin === call.callId ? 'animate-pop' : ''}`}
+                        />
+                      )}
                     </button>
                     <button
                       onClick={() => handleEditClick(call)}
@@ -155,8 +187,8 @@ const CallHistory: React.FC<CallHistoryProps> = ({ history, onRejoin, onUpdateAl
                 </>
               )}
             </div>
-        )}
-        )}
+          );
+        })}
       </div>
     </div>
   );

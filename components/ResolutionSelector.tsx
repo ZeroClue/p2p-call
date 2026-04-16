@@ -11,10 +11,16 @@ const resolutions = {
   '480p': '480p (SD)',
 };
 
-const ResolutionSelector: React.FC<ResolutionSelectorProps> = ({ resolution, onResolutionChange }) => {
+const ResolutionSelector: React.FC<ResolutionSelectorProps> = ({
+  resolution,
+  onResolutionChange,
+}) => {
   return (
     <div className="w-full max-w-xs mx-auto">
-      <label htmlFor="resolution-select" className="block text-sm font-medium text-center text-gray-400 mb-2">
+      <label
+        htmlFor="resolution-select"
+        className="block text-sm font-medium text-center text-gray-400 mb-2"
+      >
         Video Quality
       </label>
       <select

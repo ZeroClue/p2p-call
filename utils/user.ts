@@ -2,7 +2,6 @@ import { generateUUID } from './id';
 
 const USER_ID_KEY = 'p2p-user-id';
 
-
 /**
  * Retrieves the unique user ID from localStorage. If it doesn't exist,
  * it generates a new one, saves it, and then returns it.

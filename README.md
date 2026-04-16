@@ -6,7 +6,7 @@
 
 **[🚀 Launch Live Demo](https://p2p-call-9efe5.web.app)**
 
-*Simple, secure peer-to-peer video calling with optional end-to-end encryption*
+_Simple, secure peer-to-peer video calling with optional end-to-end encryption_
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
@@ -21,6 +21,7 @@
 ## ✨ Features
 
 ### 🔐 Privacy & Security
+
 - **No Account Required** - Start calling instantly, completely anonymous
 - **No Tracking** - Your data stays yours, no analytics or tracking
 - **End-to-End Encryption** - Optional AES-GCM 256-bit encryption for ultimate privacy
@@ -28,6 +29,7 @@
 - **Secure by Default** - HTTPS enforced, comprehensive security headers
 
 ### 📞 Calling Features
+
 - **Human-Readable Call IDs** - Easy-to-share format like "happy-river-sings"
 - **Direct Peer Ringing** - Call saved contacts without sharing call IDs
 - **Call History** - Track recent calls with custom aliases
@@ -36,6 +38,7 @@
 - **Multiple Resolutions** - 480p, 720p, 1080p video quality options
 
 ### 💬 In-Call Features
+
 - **Real-time Chat** - Text messaging during calls
 - **Connection Stats** - Live packet loss, jitter, RTT, and bitrate monitoring
 - **Auto-Reconnection** - Automatic recovery from network issues
@@ -43,6 +46,7 @@
 - **Audio Feedback** - Sound cues for call events
 
 ### 🌐 Progressive Web App
+
 - **Installable** - Add to home screen on mobile and desktop
 - **Offline Ready** - Service worker for offline capability
 - **Responsive Design** - Works perfectly on all devices
@@ -51,6 +55,7 @@
 ## 🏗️ Architecture
 
 ### Technology Stack
+
 - **Frontend**: React 19, TypeScript, Tailwind CSS
 - **Real-time**: WebRTC for peer connections
 - **Signaling**: Firebase Realtime Database
@@ -80,6 +85,7 @@
 ## 📋 Usage
 
 ### Creating a Call
+
 1. Click **"Start a New Call"**
 2. Configure media settings in the lobby
 3. Toggle end-to-end encryption if desired
@@ -87,12 +93,14 @@
 5. Share the call ID with your contact
 
 ### Joining a Call
+
 1. Enter the call ID you received
 2. Click **"Join Call"**
 3. Review your media in the lobby
 4. Click **"Join"** to connect
 
 ### Direct Ringing
+
 1. Add contacts to your **Pinned** list
 2. See when they're online
 3. Click their name to ring them directly
@@ -120,13 +128,13 @@
 
 ## 📱 Browser Support
 
-| Browser | Minimum Version | E2EE Support |
-|---------|----------------|--------------|
-| Chrome/Edge | 90+ | ✅ Yes |
-| Firefox | 90+ | ✅ Yes |
-| Safari | 15.4+ | ⚠️ Limited |
-| Mobile Chrome | 90+ | ✅ Yes |
-| Mobile Safari | 15.4+ | ⚠️ Limited |
+| Browser       | Minimum Version | E2EE Support |
+| ------------- | --------------- | ------------ |
+| Chrome/Edge   | 90+             | ✅ Yes       |
+| Firefox       | 90+             | ✅ Yes       |
+| Safari        | 15.4+           | ⚠️ Limited   |
+| Mobile Chrome | 90+             | ✅ Yes       |
+| Mobile Safari | 15.4+           | ⚠️ Limited   |
 
 **Note**: E2EE requires Insertable Streams API support
 

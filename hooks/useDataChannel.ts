@@ -36,10 +36,13 @@ export const useDataChannel = () => {
     }
   }, []);
 
-  const setDataChannel = useCallback((channel: RTCDataChannel) => {
-    dataChannelRef.current = channel;
-    channel.onmessage = handleDataChannelMessage;
-  }, [handleDataChannelMessage]);
+  const setDataChannel = useCallback(
+    (channel: RTCDataChannel) => {
+      dataChannelRef.current = channel;
+      channel.onmessage = handleDataChannelMessage;
+    },
+    [handleDataChannelMessage],
+  );
 
   const sendRaw = useCallback((message: object) => {
     if (dataChannelRef.current && dataChannelRef.current.readyState === 'open') {
@@ -47,13 +50,19 @@ export const useDataChannel = () => {
     }
   }, []);
 
-  const sendMessage = useCallback((chatMessage: string) => {
-    sendRaw({ type: 'chat', payload: chatMessage });
-  }, [sendRaw]);
+  const sendMessage = useCallback(
+    (chatMessage: string) => {
+      sendRaw({ type: 'chat', payload: chatMessage });
+    },
+    [sendRaw],
+  );
 
-  const sendControl = useCallback((type: 'mute' | 'video', value: boolean) => {
-    sendRaw({ type: 'control', payload: { type, value } });
-  }, [sendRaw]);
+  const sendControl = useCallback(
+    (type: 'mute' | 'video', value: boolean) => {
+      sendRaw({ type: 'control', payload: { type, value } });
+    },
+    [sendRaw],
+  );
 
   const setOnChatMessage = useCallback((callback: (data: string) => void) => {
     onChatMessageCallbackRef.current = callback;

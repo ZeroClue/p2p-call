@@ -35,32 +35,44 @@ export const useMediaStream = (initialResolution: string) => {
     try {
       // Stop existing tracks first
       if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach(track => track.stop());
+        localStreamRef.current.getTracks().forEach((track) => track.stop());
       }
 
       setErrorMessage(null);
 
-      const videoConstraints = RESOLUTION_CONSTRAINTS[res as keyof typeof RESOLUTION_CONSTRAINTS] || RESOLUTION_CONSTRAINTS['720p'];
-      const stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true });
+      const videoConstraints =
+        RESOLUTION_CONSTRAINTS[res as keyof typeof RESOLUTION_CONSTRAINTS] ||
+        RESOLUTION_CONSTRAINTS['720p'];
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: videoConstraints,
+        audio: true,
+      });
 
       // Apply current mute/video state to new stream via refs to avoid dependency
       const currentMuted = isMutedRef.current;
       const currentVideoOff = isVideoOffRef.current;
-      stream.getAudioTracks().forEach(t => { t.enabled = !currentMuted; });
-      stream.getVideoTracks().forEach(t => { t.enabled = !currentVideoOff; });
+      stream.getAudioTracks().forEach((t) => {
+        t.enabled = !currentMuted;
+      });
+      stream.getVideoTracks().forEach((t) => {
+        t.enabled = !currentVideoOff;
+      });
 
       setLocalStream(stream);
       return stream;
     } catch (error) {
       console.error('Error accessing media devices.', error);
-      let message = 'Could not access camera and microphone. Please check your system settings and browser permissions.';
+      let message =
+        'Could not access camera and microphone. Please check your system settings and browser permissions.';
 
-      const errorName = error instanceof Error ? error.name : (error as any)?.name;
+      const errorName = error instanceof Error ? error.name : (error as { name?: string })?.name;
 
       if (errorName === 'NotAllowedError' || errorName === 'PermissionDeniedError') {
-        message = 'Permission denied. Please allow this site to access your camera and microphone in your browser settings.';
+        message =
+          'Permission denied. Please allow this site to access your camera and microphone in your browser settings.';
       } else if (errorName === 'NotFoundError' || errorName === 'DevicesNotFoundError') {
-        message = 'No camera or microphone found. Please ensure your devices are connected and enabled.';
+        message =
+          'No camera or microphone found. Please ensure your devices are connected and enabled.';
       } else if (errorName === 'OverconstrainedError') {
         message = `The selected resolution (${res}) is not supported by your device. Try a lower quality.`;
       }
@@ -73,7 +85,7 @@ export const useMediaStream = (initialResolution: string) => {
   const toggleMute = useCallback(() => {
     if (localStreamRef.current) {
       const newMutedState = !isMutedRef.current;
-      localStreamRef.current.getAudioTracks().forEach(track => {
+      localStreamRef.current.getAudioTracks().forEach((track) => {
         track.enabled = !newMutedState;
       });
       setIsMuted(newMutedState);
@@ -83,7 +95,7 @@ export const useMediaStream = (initialResolution: string) => {
   const toggleVideo = useCallback(() => {
     if (localStreamRef.current) {
       const newVideoState = !isVideoOffRef.current;
-      localStreamRef.current.getVideoTracks().forEach(track => {
+      localStreamRef.current.getVideoTracks().forEach((track) => {
         track.enabled = !newVideoState;
       });
       setIsVideoOff(newVideoState);
@@ -92,7 +104,7 @@ export const useMediaStream = (initialResolution: string) => {
 
   const cleanupMedia = useCallback(() => {
     if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach(track => track.stop());
+      localStreamRef.current.getTracks().forEach((track) => track.stop());
     }
     setLocalStream(null);
   }, []);

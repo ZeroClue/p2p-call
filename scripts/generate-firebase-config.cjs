@@ -16,7 +16,7 @@ const requiredVars = [
   'FIREBASE_APP_ID',
 ];
 
-const missing = requiredVars.filter(v => !process.env[v]);
+const missing = requiredVars.filter((v) => !process.env[v]);
 if (missing.length > 0) {
   console.error('Missing required Firebase config environment variables:', missing.join(', '));
   process.exit(1);

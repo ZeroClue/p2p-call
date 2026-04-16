@@ -1,8 +1,5 @@
 {
   "name": "P2P Video Call",
   "description": "A simple and modern person-to-person video calling application built with React and WebRTC, allowing users to connect directly through their browsers.",
-  "requestFramePermissions": [
-    "camera",
-    "microphone"
-  ]
+  "requestFramePermissions": ["camera", "microphone"]
 }

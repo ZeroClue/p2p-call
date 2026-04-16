@@ -27,17 +27,20 @@ export const usePresence = (userId: string | null) => {
       const onDisconnect = userStatusRef.onDisconnect();
       onDisconnectRef.current = onDisconnect;
 
-      onDisconnect.set({
-        isOnline: false,
-        lastChanged: ServerValue.TIMESTAMP,
-      }).then(() => {
-        userStatusRef.set({
-          isOnline: true,
+      onDisconnect
+        .set({
+          isOnline: false,
           lastChanged: ServerValue.TIMESTAMP,
+        })
+        .then(() => {
+          userStatusRef.set({
+            isOnline: true,
+            lastChanged: ServerValue.TIMESTAMP,
+          });
+        })
+        .catch((error: Error) => {
+          console.error('Error setting presence:', error);
         });
-      }).catch((error: Error) => {
-        console.error('Error setting presence:', error);
-      });
     });
 
     return () => {
@@ -46,10 +49,12 @@ export const usePresence = (userId: string | null) => {
         onDisconnectRef.current.cancel().catch(() => {});
         onDisconnectRef.current = null;
       }
-      userStatusRef.set({
-        isOnline: false,
-        lastChanged: ServerValue.TIMESTAMP,
-      }).catch(() => {});
+      userStatusRef
+        .set({
+          isOnline: false,
+          lastChanged: ServerValue.TIMESTAMP,
+        })
+        .catch(() => {});
     };
   }, [userId]);
 };

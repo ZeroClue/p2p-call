@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { checkWebRTCSupport, checkE2EESupport } from '../../utils/security';
 
 describe('Security Utilities', () => {
