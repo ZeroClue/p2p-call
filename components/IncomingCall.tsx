@@ -1,5 +1,6 @@
 import React from 'react';
 import { IncomingCall } from '../types';
+import { AcceptCallIcon, DeclineCallIcon } from './icons';
 
 interface IncomingCallProps {
   callInfo: IncomingCall;
@@ -7,18 +8,6 @@ interface IncomingCallProps {
   onAccept: () => void;
   onDecline: () => void;
 }
-
-const AcceptIcon: React.FC<{className?: string}> = ({className}) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
-        <path fillRule="evenodd" clipRule="evenodd" d="M6.54 12.25a16.82 16.82 0 0 0 6.21 6.21l2.55-2.55a1 1 0 0 1 1.18-.21 12.12 12.12 0 0 0 4.41.86 1 1 0 0 1 1 1v3.44a1 1 0 0 1-1 1C9.64 22 2 14.36 2 5a1 1 0 0 1 1-1h3.44a1 1 0 0 1 1 1 12.12 12.12 0 0 0 .86 4.41 1 1 0 0 1-.21 1.18l-2.55 2.55z" />
-    </svg>
-);
-
-const DeclineIcon: React.FC<{className?: string}> = ({className}) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
-    <path fillRule="evenodd" clipRule="evenodd" d="M6.54 12.25a16.82 16.82 0 0 0 6.21 6.21l2.55-2.55a1 1 0 0 1 1.18-.21 12.12 12.12 0 0 0 4.41.86 1 1 0 0 1 1 1v3.44a1 1 0 0 1-1 1C9.64 22 2 14.36 2 5a1 1 0 0 1 1-1h3.44a1 1 0 0 1 1 1 12.12 12.12 0 0 0 .86 4.41 1 1 0 0 1-.21 1.18l-2.55 2.55z" transform="rotate(135 12 12)" />
-  </svg>
-);
 
 
 const IncomingCall: React.FC<IncomingCallProps> = ({ callInfo, callerDisplayName, onAccept, onDecline }) => {
@@ -36,7 +25,7 @@ const IncomingCall: React.FC<IncomingCallProps> = ({ callInfo, callerDisplayName
                     className="w-20 h-20 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition-transform transform hover:scale-110"
                     aria-label="Decline call"
                 >
-                    <DeclineIcon className="w-10 h-10 text-white" />
+                    <DeclineCallIcon className="w-10 h-10 text-white" />
                 </button>
                 <span className="font-semibold text-white">Decline</span>
             </div>
@@ -46,7 +35,7 @@ const IncomingCall: React.FC<IncomingCallProps> = ({ callInfo, callerDisplayName
                     className="w-20 h-20 bg-green-600 hover:bg-green-700 rounded-full flex items-center justify-center transition-transform transform hover:scale-110"
                     aria-label="Accept call"
                 >
-                    <AcceptIcon className="w-10 h-10 text-white" />
+                    <AcceptCallIcon className="w-10 h-10 text-white" />
                 </button>
                 <span className="font-semibold text-white">Accept</span>
             </div>
