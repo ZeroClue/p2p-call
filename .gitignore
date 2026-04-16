@@ -51,5 +51,6 @@ coverage/
 *.am
 .armin/
 .zeroclue/
+.claude/
 
 CLAUDE.md
