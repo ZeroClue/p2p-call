@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -7,21 +7,24 @@
 
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#0d1117" />
-    <meta name="description" content="Simple, secure peer-to-peer video calling. No accounts, no tracking, just private connections." />
+    <meta
+      name="description"
+      content="Simple, secure peer-to-peer video calling. No accounts, no tracking, just private connections."
+    />
     <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
 
     <title>P2P Video Call - Secure Video Calling</title>
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://aistudiocdn.com/react@19.1.1",
-    "react-dom/": "https://aistudiocdn.com/react-dom@19.1.1/",
-    "react/": "https://aistudiocdn.com/react@19.1.1/"
-  }
-}
-</script>
-</head>
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://aistudiocdn.com/react@19.1.1",
+          "react-dom/": "https://aistudiocdn.com/react-dom@19.1.1/",
+          "react/": "https://aistudiocdn.com/react@19.1.1/"
+        }
+      }
+    </script>
+  </head>
   <body class="dark bg-gray-950 text-slate-200 antialiased font-sans">
     <div id="root"></div>
     <!-- Firebase SDKs for signaling -->

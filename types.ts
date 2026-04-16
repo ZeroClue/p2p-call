@@ -37,9 +37,9 @@ export interface CallStats {
 }
 
 export interface IncomingCall {
-    from: string; // User ID of the caller
-    callId: string;
-    callerAlias?: string; // Alias the caller has for you
+  from: string; // User ID of the caller
+  callId: string;
+  callerAlias?: string; // Alias the caller has for you
 }
 
 export interface PeerStatus {

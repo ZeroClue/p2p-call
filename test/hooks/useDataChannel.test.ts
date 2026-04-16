@@ -45,12 +45,15 @@ describe('useDataChannel', () => {
       });
 
       expect(mockDataChannel.send).toHaveBeenCalledWith(
-        JSON.stringify({ type: 'chat', payload: 'Hello, world!' })
+        JSON.stringify({ type: 'chat', payload: 'Hello, world!' }),
       );
     });
 
     it('should be no-op when channel is closed', () => {
-      const closedChannel = { ...mockDataChannel, readyState: 'closed' as RTCDataChannelState } as RTCDataChannel;
+      const closedChannel = {
+        ...mockDataChannel,
+        readyState: 'closed' as RTCDataChannelState,
+      } as RTCDataChannel;
       const { result } = renderHook(() => useDataChannel());
 
       act(() => {
@@ -88,7 +91,7 @@ describe('useDataChannel', () => {
       });
 
       expect(mockDataChannel.send).toHaveBeenCalledWith(
-        JSON.stringify({ type: 'control', payload: { type: 'mute', value: true } })
+        JSON.stringify({ type: 'control', payload: { type: 'mute', value: true } }),
       );
     });
 
@@ -104,7 +107,7 @@ describe('useDataChannel', () => {
       });
 
       expect(mockDataChannel.send).toHaveBeenCalledWith(
-        JSON.stringify({ type: 'control', payload: { type: 'video', value: false } })
+        JSON.stringify({ type: 'control', payload: { type: 'video', value: false } }),
       );
     });
   });
@@ -342,7 +345,7 @@ describe('useDataChannel', () => {
       });
 
       expect(mockChannel2.send).toHaveBeenCalledWith(
-        JSON.stringify({ type: 'chat', payload: 'second' })
+        JSON.stringify({ type: 'chat', payload: 'second' }),
       );
     });
   });

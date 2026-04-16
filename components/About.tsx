@@ -9,35 +9,55 @@ const About: React.FC = () => {
       </div>
 
       <p className="text-gray-300">
-        A secure, serverless video calling application that connects users directly through their web browsers using WebRTC. No sign-ups, no servers—just simple and private conversations.
+        A secure, serverless video calling application that connects users directly through their
+        web browsers using WebRTC. No sign-ups, no servers—just simple and private conversations.
       </p>
 
       <div>
         <h3 className="text-lg font-semibold text-gray-200 mb-3">Powered By</h3>
         <ul className="space-y-2 text-gray-400">
           <li>
-            <a href="https://reactjs.org/" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition-colors">
+            <a
+              href="https://reactjs.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-indigo-400 transition-colors"
+            >
               React
             </a>
           </li>
           <li>
-            <a href="https://webrtc.org/" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition-colors">
+            <a
+              href="https://webrtc.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-indigo-400 transition-colors"
+            >
               WebRTC
             </a>
           </li>
           <li>
-            <a href="https://firebase.google.com/" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition-colors">
+            <a
+              href="https://firebase.google.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-indigo-400 transition-colors"
+            >
               Firebase Realtime Database
             </a>
           </li>
           <li>
-            <a href="https://tailwindcss.com/" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition-colors">
+            <a
+              href="https://tailwindcss.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-indigo-400 transition-colors"
+            >
               Tailwind CSS
             </a>
           </li>
         </ul>
       </div>
-
     </div>
   );
 };

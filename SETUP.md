@@ -35,6 +35,7 @@ npm install
 #### Configure Your App
 
 1. Copy the example configuration file:
+
    ```bash
    cp firebase.ts.example firebase.ts
    ```
@@ -42,13 +43,13 @@ npm install
 2. Open `firebase.ts` and replace the placeholder values with your Firebase config:
    ```typescript
    const firebaseConfig = {
-     apiKey: "YOUR_API_KEY",
-     authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-     databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-     projectId: "YOUR_PROJECT_ID",
-     storageBucket: "YOUR_PROJECT_ID.appspot.com",
-     messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-     appId: "YOUR_APP_ID"
+     apiKey: 'YOUR_API_KEY',
+     authDomain: 'YOUR_PROJECT_ID.firebaseapp.com',
+     databaseURL: 'https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com',
+     projectId: 'YOUR_PROJECT_ID',
+     storageBucket: 'YOUR_PROJECT_ID.appspot.com',
+     messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
+     appId: 'YOUR_APP_ID',
    };
    ```
 
@@ -80,6 +81,7 @@ firebase deploy --only database
 ```
 
 If you don't have Firebase CLI installed:
+
 ```bash
 npm install -g firebase-tools
 firebase login
@@ -110,6 +112,7 @@ firebase deploy
 ```
 
 Or deploy only hosting:
+
 ```bash
 firebase deploy --only hosting
 ```
@@ -121,6 +124,7 @@ firebase deploy --only hosting
 **Problem:** Anonymous authentication is not enabled in Firebase.
 
 **Solution:**
+
 1. Go to Firebase Console → Authentication → Sign-in method
 2. Enable Anonymous authentication
 3. Refresh the app
@@ -130,6 +134,7 @@ firebase deploy --only hosting
 **Problem:** Firebase security rules haven't been deployed.
 
 **Solution:**
+
 ```bash
 firebase deploy --only database
 ```
@@ -139,6 +144,7 @@ firebase deploy --only database
 **Problem:** Browser permissions or HTTPS requirement.
 
 **Solution:**
+
 - Allow camera/microphone permissions when prompted
 - In production, the app must be served over HTTPS
 - For local development, `localhost` is allowed
@@ -149,6 +155,7 @@ firebase deploy --only database
 
 **Solution:**
 Make sure `tailwind.config.js` has correct paths:
+
 ```javascript
 content: [
   "./index.html",
@@ -169,11 +176,13 @@ npm test
 ```
 
 Run tests with UI:
+
 ```bash
 npm run test:ui
 ```
 
 Generate coverage report:
+
 ```bash
 npm run test:coverage
 ```
@@ -203,11 +212,13 @@ Before deploying to production:
 ## Environment-Specific Notes
 
 ### Development
+
 - Service worker may cache aggressively; use hard refresh (Ctrl+Shift+R)
 - HTTPS not required for `localhost`
 - Hot module replacement enabled
 
 ### Production
+
 - HTTPS enforced automatically
 - Service worker provides offline capability
 - Optimized bundle with tree-shaking

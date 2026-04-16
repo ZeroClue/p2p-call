@@ -42,7 +42,11 @@ export const useWebRTC = (initialResolution: string) => {
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const remoteStreamRef = useRef<MediaStream | null>(null);
   const statsIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const lastStatsRef = useRef<{ timestamp: number; totalBytesSent: number; totalBytesReceived: number } | null>(null);
+  const lastStatsRef = useRef<{
+    timestamp: number;
+    totalBytesSent: number;
+    totalBytesReceived: number;
+  } | null>(null);
   const hasConnectedOnceRef = useRef(false);
   const reconnectionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -91,7 +95,7 @@ export const useWebRTC = (initialResolution: string) => {
     },
     callStateRef,
     peerIdRef,
-    enableE2EERef
+    enableE2EERef,
   );
 
   // ===== PEER CONNECTION CREATION =====
@@ -166,10 +170,10 @@ export const useWebRTC = (initialResolution: string) => {
                     : null;
                 }
                 if (report.type === 'outbound-rtp') {
-                  totalBytesSent += (report as any).bytesSent || 0;
+                  totalBytesSent += (report as RTCOutboundRtpStreamStats).bytesSent || 0;
                 }
                 if (report.type === 'inbound-rtp') {
-                  totalBytesReceived += (report as any).bytesReceived || 0;
+                  totalBytesReceived += (report as RTCInboundRtpStreamStats).bytesReceived || 0;
                 }
               });
 
@@ -179,7 +183,9 @@ export const useWebRTC = (initialResolution: string) => {
                   const sentDiff = totalBytesSent - lastStatsRef.current.totalBytesSent;
                   const receivedDiff = totalBytesReceived - lastStatsRef.current.totalBytesReceived;
                   newStats.uploadBitrate = Math.round((sentDiff * 8) / (timeDiffSeconds * 1000));
-                  newStats.downloadBitrate = Math.round((receivedDiff * 8) / (timeDiffSeconds * 1000));
+                  newStats.downloadBitrate = Math.round(
+                    (receivedDiff * 8) / (timeDiffSeconds * 1000),
+                  );
                 }
               }
               lastStatsRef.current = { timestamp: now, totalBytesSent, totalBytesReceived };
@@ -216,7 +222,7 @@ export const useWebRTC = (initialResolution: string) => {
             reconnectionTimerRef.current = setTimeout(() => {
               signaling.reconnectionAttemptsRef.current++;
               console.log(
-                `Connection lost. Attempting to reconnect... (Attempt ${signaling.reconnectionAttemptsRef.current})`
+                `Connection lost. Attempting to reconnect... (Attempt ${signaling.reconnectionAttemptsRef.current})`,
               );
               setCallState(CallState.RECONNECTING);
               reconnectionTimerRef.current = null;
@@ -265,7 +271,7 @@ export const useWebRTC = (initialResolution: string) => {
       peerConnectionRef.current = pc;
       return pc;
     },
-    [dataChannel, media.isMuted, media.isVideoOff]
+    [dataChannel, media.isMuted, media.isVideoOff],
   );
 
   // ===== CLEANUP =====
@@ -306,7 +312,7 @@ export const useWebRTC = (initialResolution: string) => {
       lastStatsRef.current = null;
       hasConnectedOnceRef.current = false;
     },
-    [media, signaling, dataChannel]
+    [media, signaling, dataChannel],
   );
 
   // ===== CALL OPERATIONS =====
@@ -355,7 +361,7 @@ export const useWebRTC = (initialResolution: string) => {
       const pc = createPeerConnection(stream);
       await signaling.joinCall(id, pc, stream, enableE2EE);
     },
-    [media, createPeerConnection, signaling, enableE2EE]
+    [media, createPeerConnection, signaling, enableE2EE],
   );
 
   const ringUser = useCallback(
@@ -383,7 +389,7 @@ export const useWebRTC = (initialResolution: string) => {
 
       await signaling.ringUser(peer, pc, stream, enableE2EE);
     },
-    [media, createPeerConnection, dataChannel, signaling, enableE2EE]
+    [media, createPeerConnection, dataChannel, signaling, enableE2EE],
   );
 
   const hangUp = useCallback(() => {
@@ -392,7 +398,9 @@ export const useWebRTC = (initialResolution: string) => {
   }, [cleanUp]);
 
   const hangUpRef = useRef(hangUp);
-  useEffect(() => { hangUpRef.current = hangUp; }, [hangUp]);
+  useEffect(() => {
+    hangUpRef.current = hangUp;
+  }, [hangUp]);
 
   const reset = useCallback(() => {
     cleanUp();

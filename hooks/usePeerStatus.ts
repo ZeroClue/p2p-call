@@ -12,26 +12,26 @@ export const usePeerStatus = (peerIds: string[]) => {
   useEffect(() => {
     const listeners: { [key: string]: (snapshot: FirebaseSnapshot) => void } = {};
 
-    setPeerStatus(prev => {
+    setPeerStatus((prev) => {
       const next: { [key: string]: PeerStatus } = {};
-      peerIds.forEach(id => {
+      peerIds.forEach((id) => {
         if (prev[id]) next[id] = prev[id];
       });
       return next;
     });
 
-    peerIds.forEach(id => {
+    peerIds.forEach((id) => {
       const peerStatusRef = db.ref(`/status/${id}`);
 
       const listener = (snapshot: FirebaseSnapshot) => {
         const status = snapshot.val() as PeerStatus | null;
         if (status) {
-          setPeerStatus(prev => ({
+          setPeerStatus((prev) => ({
             ...prev,
             [id]: status,
           }));
         } else {
-          setPeerStatus(prev => ({
+          setPeerStatus((prev) => ({
             ...prev,
             [id]: { isOnline: false, lastChanged: 0 },
           }));
@@ -43,7 +43,7 @@ export const usePeerStatus = (peerIds: string[]) => {
     });
 
     return () => {
-      peerIds.forEach(id => {
+      peerIds.forEach((id) => {
         const peerStatusRef = db.ref(`/status/${id}`);
         if (listeners[id]) {
           peerStatusRef.off('value', listeners[id]);

@@ -26,7 +26,7 @@ describe('ID Utilities', () => {
       const callId = generateCallId();
       const parts = callId.split('-');
       expect(parts).toHaveLength(3);
-      parts.forEach(part => {
+      parts.forEach((part) => {
         expect(part.length).toBeGreaterThan(0);
       });
     });

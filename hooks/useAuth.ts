@@ -30,9 +30,12 @@ export const useAuth = () => {
 
         const firebaseError = error as FirebaseError;
         let errorMessage = 'Authentication failed';
-        if (firebaseError.code === 'auth/configuration-not-found' ||
-            (firebaseError.message && firebaseError.message.includes('CONFIGURATION_NOT_FOUND'))) {
-          errorMessage = 'Anonymous authentication is not enabled. Please enable it in Firebase Console: Authentication > Sign-in method > Anonymous';
+        if (
+          firebaseError.code === 'auth/configuration-not-found' ||
+          (firebaseError.message && firebaseError.message.includes('CONFIGURATION_NOT_FOUND'))
+        ) {
+          errorMessage =
+            'Anonymous authentication is not enabled. Please enable it in Firebase Console: Authentication > Sign-in method > Anonymous';
         } else if (firebaseError.message) {
           errorMessage = firebaseError.message;
         }

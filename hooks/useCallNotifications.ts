@@ -1,6 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { CallState, CallHistoryEntry, PinnedEntry } from '../types';
-import { playIncomingSound, playConnectedSound, playEndedSound, playRingingSound, stopRingingSound } from '../utils/sounds';
+import {
+  playIncomingSound,
+  playConnectedSound,
+  playEndedSound,
+  playRingingSound,
+  stopRingingSound,
+} from '../utils/sounds';
 
 export const useCallNotifications = (
   callState: CallState,
@@ -13,7 +19,11 @@ export const useCallNotifications = (
   const [callDuration, setCallDuration] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const callStartTimeRef = useRef<number | null>(null);
-  const callDetailsForHistoryRef = useRef<{ callId: string; peerId?: string; alias?: string } | null>(null);
+  const callDetailsForHistoryRef = useRef<{
+    callId: string;
+    peerId?: string;
+    alias?: string;
+  } | null>(null);
   const hasConnectedOnceForChatRef = useRef(false);
 
   // Cleanup timer on unmount (RESOURCE LEAK FIX)
@@ -23,13 +33,18 @@ export const useCallNotifications = (
     };
   }, []);
 
-  const findAlias = useCallback((pId: string | null) => {
-    if (!pId) return undefined;
-    const pinnedContact = pinned.find(p => p.peerId === pId);
-    if (pinnedContact?.alias) return pinnedContact.alias;
-    const historyContact = [...history].sort((a, b) => b.timestamp - a.timestamp).find(h => h.peerId === pId);
-    return historyContact?.alias;
-  }, [pinned, history]);
+  const findAlias = useCallback(
+    (pId: string | null) => {
+      if (!pId) return undefined;
+      const pinnedContact = pinned.find((p) => p.peerId === pId);
+      if (pinnedContact?.alias) return pinnedContact.alias;
+      const historyContact = [...history]
+        .sort((a, b) => b.timestamp - a.timestamp)
+        .find((h) => h.peerId === pId);
+      return historyContact?.alias;
+    },
+    [pinned, history],
+  );
 
   const prevStateRef = useRef<CallState>(CallState.IDLE);
 
@@ -53,11 +68,15 @@ export const useCallNotifications = (
         }
         callStartTimeRef.current = Date.now();
         if (callId) {
-          callDetailsForHistoryRef.current = { callId, peerId: peerId || undefined, alias: peerId ? findAlias(peerId) : undefined };
+          callDetailsForHistoryRef.current = {
+            callId,
+            peerId: peerId || undefined,
+            alias: peerId ? findAlias(peerId) : undefined,
+          };
         }
         setCallDuration(0);
         if (timerRef.current) clearInterval(timerRef.current);
-        timerRef.current = setInterval(() => setCallDuration(prev => prev + 1), 1000);
+        timerRef.current = setInterval(() => setCallDuration((prev) => prev + 1), 1000);
         break;
       case CallState.ENDED:
       case CallState.DECLINED:
@@ -78,7 +97,6 @@ export const useCallNotifications = (
         stopRingingSound();
         break;
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callState, callId, peerId]);
 
   return { callDuration, hasConnectedOnceForChatRef };

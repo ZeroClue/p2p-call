@@ -11,7 +11,8 @@ export const enforceHTTPS = () => {
   // Redirect to HTTPS if not already on it
   if (window.location.protocol !== 'https:') {
     console.warn('Redirecting to HTTPS for secure WebRTC connection');
-    window.location.href = 'https:' + window.location.href.substring(window.location.protocol.length);
+    window.location.href =
+      'https:' + window.location.href.substring(window.location.protocol.length);
   }
 };
 

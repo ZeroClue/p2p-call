@@ -15,6 +15,7 @@
 ### Task 1: Fix deploy.yml
 
 **Files:**
+
 - Modify: `.github/workflows/deploy.yml`
 
 - [ ] **Step 1: Fix the deploy workflow**
@@ -131,6 +132,7 @@ git commit -m "fix(ci): deploy pipeline - use vitest run, npm ci, blocking type 
 ### Task 2: Fix pr-check.yml
 
 **Files:**
+
 - Modify: `.github/workflows/pr-check.yml`
 
 - [ ] **Step 1: Fix the PR check workflow**
@@ -237,6 +239,7 @@ git commit -m "fix(ci): pr-check pipeline - blocking gates, npm ci, remove snyk 
 ### Task 3: Fix dependabot auto-merge
 
 **Files:**
+
 - Modify: `.github/workflows/dependabot.yml`
 
 - [ ] **Step 1: Fix dependabot workflow to wait for CI**
@@ -263,7 +266,7 @@ jobs:
         id: metadata
         uses: dependabot/fetch-metadata@v2
         with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          github-token: '${{ secrets.GITHUB_TOKEN }}'
 
       - name: Wait for CI checks
         if: ${{steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor'}}
@@ -294,6 +297,7 @@ git commit -m "fix(ci): dependabot waits for CI before auto-merge"
 ### Task 4: Fix generate-firebase-config validation
 
 **Files:**
+
 - Modify: `scripts/generate-firebase-config.cjs`
 
 - [ ] **Step 1: Add validation to the config generation script**
@@ -319,7 +323,7 @@ const requiredVars = [
   'FIREBASE_APP_ID',
 ];
 
-const missing = requiredVars.filter(v => !process.env[v]);
+const missing = requiredVars.filter((v) => !process.env[v]);
 if (missing.length > 0) {
   console.error('Missing required Firebase config environment variables:', missing.join(', '));
   process.exit(1);
@@ -402,6 +406,7 @@ git commit -m "fix(ci): validate firebase config secrets before generating"
 ### Task 5: Fix Firebase security rules
 
 **Files:**
+
 - Modify: `database.rules.json`
 
 - [ ] **Step 1: Rewrite Firebase security rules**
@@ -498,6 +503,7 @@ git commit -m "fix(security): require auth for reads, prevent caller impersonati
 ### Task 6: Remove GEMINI_API_KEY from client bundle
 
 **Files:**
+
 - Modify: `vite.config.ts`
 
 - [ ] **Step 1: Remove GEMINI_API_KEY injection**
@@ -512,8 +518,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, '.'),
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -529,6 +535,7 @@ git commit -m "fix(security): remove GEMINI_API_KEY injection from client bundle
 ### Task 7: Add CSP header to firebase.json
 
 **Files:**
+
 - Modify: `firebase.json`
 
 - [ ] **Step 1: Add CSP and cache headers**
@@ -542,12 +549,7 @@ Replace the `headers` section in `firebase.json`. The full file becomes:
   },
   "hosting": {
     "public": "dist",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**",
-      "firebase.ts"
-    ],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**", "firebase.ts"],
     "rewrites": [
       {
         "source": "**",
@@ -603,9 +605,11 @@ git commit -m "fix(security): add Content-Security-Policy header"
 ### Task 8: Fix double initMedia and stale closures
 
 **Files:**
+
 - Modify: `hooks/useWebRTC.ts`
 
 This is the most complex change. The fixes are:
+
 1. Remove the `useEffect` that re-calls `initMedia` when `callState` becomes `LOBBY`
 2. Remove `isMuted`/`isVideoOff` from `initMedia` deps (don't re-init stream on mute toggle)
 3. Use refs for values read inside Firebase callbacks to avoid stale closures
@@ -665,7 +669,11 @@ export const useWebRTC = (initialResolution: string) => {
   const reconnectionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const ringingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const statsIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const lastStatsRef = useRef<{ timestamp: number, totalBytesSent: number, totalBytesReceived: number } | null>(null);
+  const lastStatsRef = useRef<{
+    timestamp: number;
+    totalBytesSent: number;
+    totalBytesReceived: number;
+  } | null>(null);
   const hasConnectedOnceRef = useRef(false);
 
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
@@ -681,13 +689,27 @@ export const useWebRTC = (initialResolution: string) => {
   const isMutedRef = useRef(isMuted);
   const isVideoOffRef = useRef(isVideoOff);
 
-  useEffect(() => { callStateRef.current = callState; }, [callState]);
-  useEffect(() => { peerIdRef.current = peerId; }, [peerId]);
-  useEffect(() => { enableE2EERef.current = enableE2EE; }, [enableE2EE]);
-  useEffect(() => { isMutedRef.current = isMuted; }, [isMuted]);
-  useEffect(() => { isVideoOffRef.current = isVideoOff; }, [isVideoOff]);
-  useEffect(() => { localStreamRef.current = localStream; }, [localStream]);
-  useEffect(() => { remoteStreamRef.current = remoteStream; }, [remoteStream]);
+  useEffect(() => {
+    callStateRef.current = callState;
+  }, [callState]);
+  useEffect(() => {
+    peerIdRef.current = peerId;
+  }, [peerId]);
+  useEffect(() => {
+    enableE2EERef.current = enableE2EE;
+  }, [enableE2EE]);
+  useEffect(() => {
+    isMutedRef.current = isMuted;
+  }, [isMuted]);
+  useEffect(() => {
+    isVideoOffRef.current = isVideoOff;
+  }, [isVideoOff]);
+  useEffect(() => {
+    localStreamRef.current = localStream;
+  }, [localStream]);
+  useEffect(() => {
+    remoteStreamRef.current = remoteStream;
+  }, [remoteStream]);
 
   const setOnChatMessage = useCallback((callback: (data: string) => void) => {
     onChatMessageCallbackRef.current = callback;
@@ -699,9 +721,12 @@ export const useWebRTC = (initialResolution: string) => {
     }
   }, []);
 
-  const sendMessage = useCallback((chatMessage: string) => {
-    sendDataChannelMessage({ type: 'chat', payload: chatMessage });
-  }, [sendDataChannelMessage]);
+  const sendMessage = useCallback(
+    (chatMessage: string) => {
+      sendDataChannelMessage({ type: 'chat', payload: chatMessage });
+    },
+    [sendDataChannelMessage],
+  );
 
   const handleDataChannelMessage = useCallback((event: MessageEvent) => {
     try {
@@ -731,13 +756,13 @@ export const useWebRTC = (initialResolution: string) => {
     }
 
     if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach(track => track.stop());
+      localStreamRef.current.getTracks().forEach((track) => track.stop());
     }
     setLocalStream(null);
 
     const rs = remoteStreamRef.current;
     if (rs) {
-      rs.getTracks().forEach(track => track.stop());
+      rs.getTracks().forEach((track) => track.stop());
       setRemoteStream(null);
     }
 
@@ -788,28 +813,31 @@ export const useWebRTC = (initialResolution: string) => {
     setCallState(CallState.ENDED);
   }, [cleanUp]);
 
-  const declineCall = useCallback(async (incomingCallId: string, peerToRingId?: string) => {
-    const myUserId = getUserId();
-    const callRef = db.ref(`calls/${incomingCallId}`);
+  const declineCall = useCallback(
+    async (incomingCallId: string, peerToRingId?: string) => {
+      const myUserId = getUserId();
+      const callRef = db.ref(`calls/${incomingCallId}`);
 
-    try {
-      if (peerToRingId) {
-        const calleeIncomingCallRef = db.ref(`users/${peerToRingId}/incomingCall`);
-        await calleeIncomingCallRef.remove();
-      } else {
-        const myIncomingCallRef = db.ref(`users/${myUserId}/incomingCall`);
-        await myIncomingCallRef.remove();
+      try {
+        if (peerToRingId) {
+          const calleeIncomingCallRef = db.ref(`users/${peerToRingId}/incomingCall`);
+          await calleeIncomingCallRef.remove();
+        } else {
+          const myIncomingCallRef = db.ref(`users/${myUserId}/incomingCall`);
+          await myIncomingCallRef.remove();
+        }
+
+        await callRef.update({ declined: true });
+      } catch (error) {
+        console.error('Error declining call:', error);
       }
 
-      await callRef.update({ declined: true });
-    } catch (error) {
-      console.error('Error declining call:', error);
-    }
-
-    cleanUp(true);
-    setTimeout(() => callRef.remove(), 2000);
-    setCallState(CallState.IDLE);
-  }, [cleanUp]);
+      cleanUp(true);
+      setTimeout(() => callRef.remove(), 2000);
+      setCallState(CallState.IDLE);
+    },
+    [cleanUp],
+  );
 
   const reset = useCallback(() => {
     cleanUp();
@@ -823,29 +851,41 @@ export const useWebRTC = (initialResolution: string) => {
   const initMedia = useCallback(async (res: string) => {
     try {
       if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach(track => track.stop());
+        localStreamRef.current.getTracks().forEach((track) => track.stop());
       }
 
       setErrorMessage(null);
 
-      const videoConstraints = RESOLUTION_CONSTRAINTS[res as keyof typeof RESOLUTION_CONSTRAINTS] || RESOLUTION_CONSTRAINTS['720p'];
-      const stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true });
+      const videoConstraints =
+        RESOLUTION_CONSTRAINTS[res as keyof typeof RESOLUTION_CONSTRAINTS] ||
+        RESOLUTION_CONSTRAINTS['720p'];
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: videoConstraints,
+        audio: true,
+      });
 
       // Apply current mute/video state to new stream via refs to avoid dependency
       const currentMuted = isMutedRef.current;
       const currentVideoOff = isVideoOffRef.current;
-      stream.getAudioTracks().forEach(t => { t.enabled = !currentMuted; });
-      stream.getVideoTracks().forEach(t => { t.enabled = !currentVideoOff; });
+      stream.getAudioTracks().forEach((t) => {
+        t.enabled = !currentMuted;
+      });
+      stream.getVideoTracks().forEach((t) => {
+        t.enabled = !currentVideoOff;
+      });
       setLocalStream(stream);
       return stream;
     } catch (error) {
       console.error('Error accessing media devices.', error);
-      let message = 'Could not access camera and microphone. Please check your system settings and browser permissions.';
+      let message =
+        'Could not access camera and microphone. Please check your system settings and browser permissions.';
       if (error instanceof Error) {
         if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-          message = 'Permission denied. Please allow this site to access your camera and microphone in your browser settings.';
+          message =
+            'Permission denied. Please allow this site to access your camera and microphone in your browser settings.';
         } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
-          message = 'No camera or microphone found. Please ensure your devices are connected and enabled.';
+          message =
+            'No camera or microphone found. Please ensure your devices are connected and enabled.';
         } else if (error.name === 'OverconstrainedError') {
           message = `The selected resolution (${res}) is not supported by your device. Try a lower quality.`;
         }
@@ -878,337 +918,244 @@ export const useWebRTC = (initialResolution: string) => {
 
       await callDocRef.current.update({ offer });
     } catch (error) {
-      console.error("Failed to restart ICE connection:", error);
+      console.error('Failed to restart ICE connection:', error);
       hangUp();
     }
   }, [hangUp]);
 
-  const createPeerConnection = useCallback((stream: MediaStream) => {
-    const pc = new RTCPeerConnection(STUN_SERVERS);
+  const createPeerConnection = useCallback(
+    (stream: MediaStream) => {
+      const pc = new RTCPeerConnection(STUN_SERVERS);
 
-    stream.getTracks().forEach((track) => {
-      pc.addTrack(track, stream);
-    });
+      stream.getTracks().forEach((track) => {
+        pc.addTrack(track, stream);
+      });
 
-    pc.ontrack = (event) => {
-      remoteStreamRef.current = event.streams[0];
-      setRemoteStream(event.streams[0]);
-    };
-
-    pc.ondatachannel = (event) => {
-      dataChannelRef.current = event.channel;
-      dataChannelRef.current.onmessage = handleDataChannelMessage;
-      dataChannelRef.current.onopen = () => {
-        console.log('Data channel opened.');
-        sendDataChannelMessage({ type: 'control', payload: { type: 'mute', value: isMuted } });
-        sendDataChannelMessage({ type: 'control', payload: { type: 'video', value: isVideoOff } });
+      pc.ontrack = (event) => {
+        remoteStreamRef.current = event.streams[0];
+        setRemoteStream(event.streams[0]);
       };
-      dataChannelRef.current.onclose = () => console.log('Data channel closed by peer.');
-    };
 
-    pc.onconnectionstatechange = () => {
-      if (!pc) return;
-      setConnectionState(pc.connectionState);
+      pc.ondatachannel = (event) => {
+        dataChannelRef.current = event.channel;
+        dataChannelRef.current.onmessage = handleDataChannelMessage;
+        dataChannelRef.current.onopen = () => {
+          console.log('Data channel opened.');
+          sendDataChannelMessage({ type: 'control', payload: { type: 'mute', value: isMuted } });
+          sendDataChannelMessage({
+            type: 'control',
+            payload: { type: 'video', value: isVideoOff },
+          });
+        };
+        dataChannelRef.current.onclose = () => console.log('Data channel closed by peer.');
+      };
 
-      if (pc.connectionState === 'connected') {
-        hasConnectedOnceRef.current = true;
-        if (ringingTimeoutRef.current) clearTimeout(ringingTimeoutRef.current);
-        reconnectionAttemptsRef.current = 0;
-        if (reconnectionTimerRef.current) {
-          clearTimeout(reconnectionTimerRef.current);
-          reconnectionTimerRef.current = null;
-        }
-        if (statsIntervalRef.current) {
-          clearInterval(statsIntervalRef.current);
-        }
-        statsIntervalRef.current = setInterval(async () => {
-          if (peerConnectionRef.current) {
-            const stats = await peerConnectionRef.current.getStats();
-            const newStats: CallStats = { packetsLost: null, jitter: null, roundTripTime: null, uploadBitrate: null, downloadBitrate: null };
-            let totalBytesSent = 0;
-            let totalBytesReceived = 0;
-            const now = Date.now();
+      pc.onconnectionstatechange = () => {
+        if (!pc) return;
+        setConnectionState(pc.connectionState);
 
-            stats.forEach(report => {
-              if (report.type === 'remote-inbound-rtp' && report.kind === 'video') {
-                newStats.packetsLost = report.packetsLost;
-                newStats.jitter = report.jitter ? Math.round(report.jitter * 1000) : null;
-              }
-              if (report.type === 'candidate-pair' && report.state === 'succeeded') {
-                newStats.roundTripTime = report.currentRoundTripTime ? Math.round(report.currentRoundTripTime * 1000) : null;
-              }
-              if (report.type === 'outbound-rtp') {
-                totalBytesSent += report.bytesSent;
-              }
-              if (report.type === 'inbound-rtp') {
-                totalBytesReceived += report.bytesReceived;
-              }
-            });
-
-            if (lastStatsRef.current) {
-              const timeDiffSeconds = (now - lastStatsRef.current.timestamp) / 1000;
-              if (timeDiffSeconds > 0) {
-                const sentDiff = totalBytesSent - lastStatsRef.current.totalBytesSent;
-                const receivedDiff = totalBytesReceived - lastStatsRef.current.totalBytesReceived;
-                newStats.uploadBitrate = Math.round((sentDiff * 8) / (timeDiffSeconds * 1000));
-                newStats.downloadBitrate = Math.round((receivedDiff * 8) / (timeDiffSeconds * 1000));
-              }
-            }
-            lastStatsRef.current = { timestamp: now, totalBytesSent, totalBytesReceived };
-            setCallStats(newStats);
-          }
-        }, 1000);
-
-        setCallState(CallState.CONNECTED);
-        if (encryptionKeyRef.current) {
-          if (setupE2EE(pc, encryptionKeyRef.current)) {
-            setIsE2EEActive(true);
-          }
-        }
-      } else if (pc.connectionState === 'failed') {
-        console.error("Peer connection failed. Hanging up.");
-        hangUp();
-      } else if (pc.connectionState === 'disconnected') {
-        setIsE2EEActive(false);
-        setCallStats(null);
-        if (statsIntervalRef.current) clearInterval(statsIntervalRef.current);
-        lastStatsRef.current = null;
-
-        if (isCallerRef.current && reconnectionAttemptsRef.current < MAX_RECONNECTION_ATTEMPTS && !reconnectionTimerRef.current) {
-          reconnectionTimerRef.current = setTimeout(() => {
-            reconnectionAttemptsRef.current++;
-            console.log(`Connection lost. Attempting to reconnect... (Attempt ${reconnectionAttemptsRef.current})`);
-            setCallState(CallState.RECONNECTING);
-
+        if (pc.connectionState === 'connected') {
+          hasConnectedOnceRef.current = true;
+          if (ringingTimeoutRef.current) clearTimeout(ringingTimeoutRef.current);
+          reconnectionAttemptsRef.current = 0;
+          if (reconnectionTimerRef.current) {
+            clearTimeout(reconnectionTimerRef.current);
             reconnectionTimerRef.current = null;
+          }
+          if (statsIntervalRef.current) {
+            clearInterval(statsIntervalRef.current);
+          }
+          statsIntervalRef.current = setInterval(async () => {
+            if (peerConnectionRef.current) {
+              const stats = await peerConnectionRef.current.getStats();
+              const newStats: CallStats = {
+                packetsLost: null,
+                jitter: null,
+                roundTripTime: null,
+                uploadBitrate: null,
+                downloadBitrate: null,
+              };
+              let totalBytesSent = 0;
+              let totalBytesReceived = 0;
+              const now = Date.now();
 
-            restartIce();
-          }, 2000 * reconnectionAttemptsRef.current);
-        } else if (reconnectionAttemptsRef.current >= MAX_RECONNECTION_ATTEMPTS && callStateRef.current !== CallState.ENDED) {
-          console.log("Reconnection failed after maximum attempts.");
+              stats.forEach((report) => {
+                if (report.type === 'remote-inbound-rtp' && report.kind === 'video') {
+                  newStats.packetsLost = report.packetsLost;
+                  newStats.jitter = report.jitter ? Math.round(report.jitter * 1000) : null;
+                }
+                if (report.type === 'candidate-pair' && report.state === 'succeeded') {
+                  newStats.roundTripTime = report.currentRoundTripTime
+                    ? Math.round(report.currentRoundTripTime * 1000)
+                    : null;
+                }
+                if (report.type === 'outbound-rtp') {
+                  totalBytesSent += report.bytesSent;
+                }
+                if (report.type === 'inbound-rtp') {
+                  totalBytesReceived += report.bytesReceived;
+                }
+              });
+
+              if (lastStatsRef.current) {
+                const timeDiffSeconds = (now - lastStatsRef.current.timestamp) / 1000;
+                if (timeDiffSeconds > 0) {
+                  const sentDiff = totalBytesSent - lastStatsRef.current.totalBytesSent;
+                  const receivedDiff = totalBytesReceived - lastStatsRef.current.totalBytesReceived;
+                  newStats.uploadBitrate = Math.round((sentDiff * 8) / (timeDiffSeconds * 1000));
+                  newStats.downloadBitrate = Math.round(
+                    (receivedDiff * 8) / (timeDiffSeconds * 1000),
+                  );
+                }
+              }
+              lastStatsRef.current = { timestamp: now, totalBytesSent, totalBytesReceived };
+              setCallStats(newStats);
+            }
+          }, 1000);
+
+          setCallState(CallState.CONNECTED);
+          if (encryptionKeyRef.current) {
+            if (setupE2EE(pc, encryptionKeyRef.current)) {
+              setIsE2EEActive(true);
+            }
+          }
+        } else if (pc.connectionState === 'failed') {
+          console.error('Peer connection failed. Hanging up.');
           hangUp();
-        }
-      } else if (pc.connectionState === 'closed') {
-        setIsE2EEActive(false);
-        setCallStats(null);
-        if (statsIntervalRef.current) clearInterval(statsIntervalRef.current);
-        lastStatsRef.current = null;
-      }
-    };
+        } else if (pc.connectionState === 'disconnected') {
+          setIsE2EEActive(false);
+          setCallStats(null);
+          if (statsIntervalRef.current) clearInterval(statsIntervalRef.current);
+          lastStatsRef.current = null;
 
-    peerConnectionRef.current = pc;
-    setConnectionState(pc.connectionState);
-    return pc;
-  }, [restartIce, hangUp, handleDataChannelMessage, sendDataChannelMessage, isMuted, isVideoOff]);
+          if (
+            isCallerRef.current &&
+            reconnectionAttemptsRef.current < MAX_RECONNECTION_ATTEMPTS &&
+            !reconnectionTimerRef.current
+          ) {
+            reconnectionTimerRef.current = setTimeout(() => {
+              reconnectionAttemptsRef.current++;
+              console.log(
+                `Connection lost. Attempting to reconnect... (Attempt ${reconnectionAttemptsRef.current})`,
+              );
+              setCallState(CallState.RECONNECTING);
 
-  const initiateCall = useCallback(async (id: string, isRinging: boolean = false) => {
-    if (isOperationInProgressRef.current) return;
-    if (!localStreamRef.current) {
-      console.error("Cannot initiate call without a local stream.");
-      setCallState(CallState.MEDIA_ERROR);
-      return;
-    }
-    isOperationInProgressRef.current = true;
-    setCallState(isRinging ? CallState.RINGING : CallState.CREATING_OFFER);
-    isCallerRef.current = true;
-    reconnectionAttemptsRef.current = 0;
+              reconnectionTimerRef.current = null;
 
-    try {
-      const pc = createPeerConnection(localStreamRef.current);
-      setCallId(id);
-
-      const dc = pc.createDataChannel('chat');
-      dc.onclose = () => console.log('Data channel closed.');
-      dc.onmessage = handleDataChannelMessage;
-      dataChannelRef.current = dc;
-
-      callDocRef.current = db.ref(`calls/${id}`);
-      offerCandidatesRef.current = callDocRef.current.child('offerCandidates');
-      answerCandidatesRef.current = callDocRef.current.child('answerCandidates');
-
-      pc.onicecandidate = (event) => {
-        if (event.candidate && offerCandidatesRef.current) {
-          offerCandidatesRef.current.push(event.candidate.toJSON());
-        }
-      };
-
-      const offerDescription = await pc.createOffer();
-      await pc.setLocalDescription(offerDescription);
-
-      const offer = {
-        sdp: offerDescription.sdp,
-        type: offerDescription.type,
-      };
-
-      const callerId = getUserId();
-      const callDataToSet: { [key: string]: any } = { offer, callerId, callId: id };
-
-      if (enableE2EERef.current) {
-        const { key, rawKey } = await generateKey();
-        encryptionKeyRef.current = key;
-        const exportableKey = Array.from(new Uint8Array(rawKey));
-        callDataToSet.encryptionKey = exportableKey;
-      } else {
-        encryptionKeyRef.current = null;
-      }
-
-      await callDocRef.current.set(callDataToSet);
-
-      callDocRef.current.on('value', async (snapshot: any) => {
-        const data = snapshot.val();
-        if (!data) {
-          if (callStateRef.current !== CallState.IDLE && callStateRef.current !== CallState.ENDED) {
+              restartIce();
+            }, 2000 * reconnectionAttemptsRef.current);
+          } else if (
+            reconnectionAttemptsRef.current >= MAX_RECONNECTION_ATTEMPTS &&
+            callStateRef.current !== CallState.ENDED
+          ) {
+            console.log('Reconnection failed after maximum attempts.');
             hangUp();
           }
-          return;
+        } else if (pc.connectionState === 'closed') {
+          setIsE2EEActive(false);
+          setCallStats(null);
+          if (statsIntervalRef.current) clearInterval(statsIntervalRef.current);
+          lastStatsRef.current = null;
         }
-
-        if (data?.declined) {
-          setCallState(CallState.DECLINED);
-          cleanUp();
-          return;
-        }
-
-        if (data?.joinerId && !peerIdRef.current) {
-          setPeerId(data.joinerId);
-        }
-
-        if (data?.answer && (!pc.currentRemoteDescription || pc.currentRemoteDescription.sdp !== data.answer.sdp)) {
-          try {
-            const answerDescription = new RTCSessionDescription(data.answer);
-            await pc.setRemoteDescription(answerDescription);
-          } catch (error) {
-            console.error('Error setting remote description:', error);
-          }
-        }
-      });
-
-      answerCandidatesRef.current.on('child_added', (snapshot: any) => {
-        try {
-          const candidate = new RTCIceCandidate(snapshot.val());
-          pc.addIceCandidate(candidate);
-        } catch (error) {
-          console.error('Error adding ICE candidate:', error);
-        }
-      });
-
-      if (!isRinging) {
-        setCallState(CallState.WAITING_FOR_ANSWER);
-      }
-
-      // Open data channel after setup
-      dc.onopen = () => {
-        console.log('Data channel opened.');
-        sendDataChannelMessage({ type: 'control', payload: { type: 'mute', value: isMuted } });
-        sendDataChannelMessage({ type: 'control', payload: { type: 'video', value: isVideoOff } });
       };
-    } catch (error) {
-      console.error('Error initiating call:', error);
-      cleanUp();
-      setCallState(CallState.IDLE);
-    }
-  }, [createPeerConnection, hangUp, cleanUp, handleDataChannelMessage, sendDataChannelMessage, isMuted, isVideoOff]);
 
-  const ringUser = useCallback(async (peer: PinnedEntry) => {
-    if (!peer.peerId) {
-      console.error("Cannot ring user without a peer ID.");
-      return;
-    }
-    const newCallId = generateCallId();
-    setPeerId(peer.peerId);
-    setCallId(newCallId);
+      peerConnectionRef.current = pc;
+      setConnectionState(pc.connectionState);
+      return pc;
+    },
+    [restartIce, hangUp, handleDataChannelMessage, sendDataChannelMessage, isMuted, isVideoOff],
+  );
 
-    const myUserId = getUserId();
-    const myDisplayName = getUserDisplayName();
-    const incomingCallRef = db.ref(`users/${peer.peerId}/incomingCall`);
+  const initiateCall = useCallback(
+    async (id: string, isRinging: boolean = false) => {
+      if (isOperationInProgressRef.current) return;
+      if (!localStreamRef.current) {
+        console.error('Cannot initiate call without a local stream.');
+        setCallState(CallState.MEDIA_ERROR);
+        return;
+      }
+      isOperationInProgressRef.current = true;
+      setCallState(isRinging ? CallState.RINGING : CallState.CREATING_OFFER);
+      isCallerRef.current = true;
+      reconnectionAttemptsRef.current = 0;
 
-    const callPayload: { from: string; callId: string; callerAlias?: string } = {
-      from: myUserId,
-      callId: newCallId,
-    };
-
-    if (myDisplayName) {
-      callPayload.callerAlias = myDisplayName;
-    }
-
-    await incomingCallRef.set(callPayload);
-
-    await initiateCall(newCallId, true);
-
-    ringingTimeoutRef.current = setTimeout(() => {
-      declineCall(newCallId, peer.peerId);
-    }, RING_TIMEOUT_MS);
-
-  }, [initiateCall, declineCall]);
-
-  const startCall = useCallback(async () => {
-    const newCallId = generateCallId();
-    await initiateCall(newCallId);
-  }, [initiateCall]);
-
-  const joinCall = useCallback(async (id: string) => {
-    if (isOperationInProgressRef.current) return;
-    isOperationInProgressRef.current = true;
-    isCallerRef.current = false;
-    reconnectionAttemptsRef.current = 0;
-
-    try {
-      const callRef = db.ref(`calls/${id}`);
-      const callSnapshot = await callRef.get();
-      const callData = callSnapshot.val();
-
-      if (callData?.offer) {
-        if (!localStreamRef.current) {
-          console.error("Cannot join call without a local stream.");
-          setCallState(CallState.MEDIA_ERROR);
-          isOperationInProgressRef.current = false;
-          return;
-        }
-        setCallState(CallState.JOINING);
-
-        const initialOfferSdp = callData.offer.sdp;
-
-        if (callData.callerId) {
-          setPeerId(callData.callerId);
-        }
-
-        if (callData.encryptionKey) {
-          const rawKey = new Uint8Array(callData.encryptionKey).buffer;
-          encryptionKeyRef.current = await importKey(rawKey);
-        } else {
-          console.warn("Call does not support E2EE: encryption key missing.");
-        }
-
+      try {
         const pc = createPeerConnection(localStreamRef.current);
         setCallId(id);
 
-        callDocRef.current = callRef;
+        const dc = pc.createDataChannel('chat');
+        dc.onclose = () => console.log('Data channel closed.');
+        dc.onmessage = handleDataChannelMessage;
+        dataChannelRef.current = dc;
+
+        callDocRef.current = db.ref(`calls/${id}`);
         offerCandidatesRef.current = callDocRef.current.child('offerCandidates');
         answerCandidatesRef.current = callDocRef.current.child('answerCandidates');
 
         pc.onicecandidate = (event) => {
-          if (event.candidate && answerCandidatesRef.current) {
-            answerCandidatesRef.current.push(event.candidate.toJSON());
+          if (event.candidate && offerCandidatesRef.current) {
+            offerCandidatesRef.current.push(event.candidate.toJSON());
           }
         };
 
-        await pc.setRemoteDescription(new RTCSessionDescription(callData.offer));
+        const offerDescription = await pc.createOffer();
+        await pc.setLocalDescription(offerDescription);
 
-        const answerDescription = await pc.createAnswer();
-        await pc.setLocalDescription(answerDescription);
-
-        const answer = {
-          type: answerDescription.type,
-          sdp: answerDescription.sdp,
+        const offer = {
+          sdp: offerDescription.sdp,
+          type: offerDescription.type,
         };
 
-        const joinerId = getUserId();
-        await callDocRef.current.update({ answer, joinerId });
+        const callerId = getUserId();
+        const callDataToSet: { [key: string]: any } = { offer, callerId, callId: id };
 
-        const calleeIncomingCallRef = db.ref(`users/${joinerId}/incomingCall`);
-        await calleeIncomingCallRef.remove();
+        if (enableE2EERef.current) {
+          const { key, rawKey } = await generateKey();
+          encryptionKeyRef.current = key;
+          const exportableKey = Array.from(new Uint8Array(rawKey));
+          callDataToSet.encryptionKey = exportableKey;
+        } else {
+          encryptionKeyRef.current = null;
+        }
 
-        offerCandidatesRef.current.on('child_added', (snapshot: any) => {
+        await callDocRef.current.set(callDataToSet);
+
+        callDocRef.current.on('value', async (snapshot: any) => {
+          const data = snapshot.val();
+          if (!data) {
+            if (
+              callStateRef.current !== CallState.IDLE &&
+              callStateRef.current !== CallState.ENDED
+            ) {
+              hangUp();
+            }
+            return;
+          }
+
+          if (data?.declined) {
+            setCallState(CallState.DECLINED);
+            cleanUp();
+            return;
+          }
+
+          if (data?.joinerId && !peerIdRef.current) {
+            setPeerId(data.joinerId);
+          }
+
+          if (
+            data?.answer &&
+            (!pc.currentRemoteDescription || pc.currentRemoteDescription.sdp !== data.answer.sdp)
+          ) {
+            try {
+              const answerDescription = new RTCSessionDescription(data.answer);
+              await pc.setRemoteDescription(answerDescription);
+            } catch (error) {
+              console.error('Error setting remote description:', error);
+            }
+          }
+        });
+
+        answerCandidatesRef.current.on('child_added', (snapshot: any) => {
           try {
             const candidate = new RTCIceCandidate(snapshot.val());
             pc.addIceCandidate(candidate);
@@ -1217,52 +1164,198 @@ export const useWebRTC = (initialResolution: string) => {
           }
         });
 
-        callDocRef.current.on('value', async (snapshot: any) => {
-          const data = snapshot.val();
-          if (!data) {
-            if (callStateRef.current !== CallState.IDLE && callStateRef.current !== CallState.ENDED) {
-              hangUp();
-            }
+        if (!isRinging) {
+          setCallState(CallState.WAITING_FOR_ANSWER);
+        }
+
+        // Open data channel after setup
+        dc.onopen = () => {
+          console.log('Data channel opened.');
+          sendDataChannelMessage({ type: 'control', payload: { type: 'mute', value: isMuted } });
+          sendDataChannelMessage({
+            type: 'control',
+            payload: { type: 'video', value: isVideoOff },
+          });
+        };
+      } catch (error) {
+        console.error('Error initiating call:', error);
+        cleanUp();
+        setCallState(CallState.IDLE);
+      }
+    },
+    [
+      createPeerConnection,
+      hangUp,
+      cleanUp,
+      handleDataChannelMessage,
+      sendDataChannelMessage,
+      isMuted,
+      isVideoOff,
+    ],
+  );
+
+  const ringUser = useCallback(
+    async (peer: PinnedEntry) => {
+      if (!peer.peerId) {
+        console.error('Cannot ring user without a peer ID.');
+        return;
+      }
+      const newCallId = generateCallId();
+      setPeerId(peer.peerId);
+      setCallId(newCallId);
+
+      const myUserId = getUserId();
+      const myDisplayName = getUserDisplayName();
+      const incomingCallRef = db.ref(`users/${peer.peerId}/incomingCall`);
+
+      const callPayload: { from: string; callId: string; callerAlias?: string } = {
+        from: myUserId,
+        callId: newCallId,
+      };
+
+      if (myDisplayName) {
+        callPayload.callerAlias = myDisplayName;
+      }
+
+      await incomingCallRef.set(callPayload);
+
+      await initiateCall(newCallId, true);
+
+      ringingTimeoutRef.current = setTimeout(() => {
+        declineCall(newCallId, peer.peerId);
+      }, RING_TIMEOUT_MS);
+    },
+    [initiateCall, declineCall],
+  );
+
+  const startCall = useCallback(async () => {
+    const newCallId = generateCallId();
+    await initiateCall(newCallId);
+  }, [initiateCall]);
+
+  const joinCall = useCallback(
+    async (id: string) => {
+      if (isOperationInProgressRef.current) return;
+      isOperationInProgressRef.current = true;
+      isCallerRef.current = false;
+      reconnectionAttemptsRef.current = 0;
+
+      try {
+        const callRef = db.ref(`calls/${id}`);
+        const callSnapshot = await callRef.get();
+        const callData = callSnapshot.val();
+
+        if (callData?.offer) {
+          if (!localStreamRef.current) {
+            console.error('Cannot join call without a local stream.');
+            setCallState(CallState.MEDIA_ERROR);
+            isOperationInProgressRef.current = false;
             return;
           }
+          setCallState(CallState.JOINING);
 
-          if (data?.offer && data.offer.sdp !== initialOfferSdp) {
-            console.log("Received a new offer for reconnection.");
-            setCallState(CallState.RECONNECTING);
-            try {
-              await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+          const initialOfferSdp = callData.offer.sdp;
 
-              const newAnswerDescription = await pc.createAnswer();
-              await pc.setLocalDescription(newAnswerDescription);
-
-              const newAnswer = {
-                type: newAnswerDescription.type,
-                sdp: newAnswerDescription.sdp,
-              };
-
-              await callDocRef.current.update({ answer: newAnswer });
-            } catch (error) {
-              console.error('Error handling reconnection offer:', error);
-            }
+          if (callData.callerId) {
+            setPeerId(callData.callerId);
           }
-        });
 
-        setCallState(CallState.CREATING_ANSWER);
-      } else {
-        console.log(`Call ID "${id}" is available. Initializing a new call.`);
-        await initiateCall(id);
+          if (callData.encryptionKey) {
+            const rawKey = new Uint8Array(callData.encryptionKey).buffer;
+            encryptionKeyRef.current = await importKey(rawKey);
+          } else {
+            console.warn('Call does not support E2EE: encryption key missing.');
+          }
+
+          const pc = createPeerConnection(localStreamRef.current);
+          setCallId(id);
+
+          callDocRef.current = callRef;
+          offerCandidatesRef.current = callDocRef.current.child('offerCandidates');
+          answerCandidatesRef.current = callDocRef.current.child('answerCandidates');
+
+          pc.onicecandidate = (event) => {
+            if (event.candidate && answerCandidatesRef.current) {
+              answerCandidatesRef.current.push(event.candidate.toJSON());
+            }
+          };
+
+          await pc.setRemoteDescription(new RTCSessionDescription(callData.offer));
+
+          const answerDescription = await pc.createAnswer();
+          await pc.setLocalDescription(answerDescription);
+
+          const answer = {
+            type: answerDescription.type,
+            sdp: answerDescription.sdp,
+          };
+
+          const joinerId = getUserId();
+          await callDocRef.current.update({ answer, joinerId });
+
+          const calleeIncomingCallRef = db.ref(`users/${joinerId}/incomingCall`);
+          await calleeIncomingCallRef.remove();
+
+          offerCandidatesRef.current.on('child_added', (snapshot: any) => {
+            try {
+              const candidate = new RTCIceCandidate(snapshot.val());
+              pc.addIceCandidate(candidate);
+            } catch (error) {
+              console.error('Error adding ICE candidate:', error);
+            }
+          });
+
+          callDocRef.current.on('value', async (snapshot: any) => {
+            const data = snapshot.val();
+            if (!data) {
+              if (
+                callStateRef.current !== CallState.IDLE &&
+                callStateRef.current !== CallState.ENDED
+              ) {
+                hangUp();
+              }
+              return;
+            }
+
+            if (data?.offer && data.offer.sdp !== initialOfferSdp) {
+              console.log('Received a new offer for reconnection.');
+              setCallState(CallState.RECONNECTING);
+              try {
+                await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+
+                const newAnswerDescription = await pc.createAnswer();
+                await pc.setLocalDescription(newAnswerDescription);
+
+                const newAnswer = {
+                  type: newAnswerDescription.type,
+                  sdp: newAnswerDescription.sdp,
+                };
+
+                await callDocRef.current.update({ answer: newAnswer });
+              } catch (error) {
+                console.error('Error handling reconnection offer:', error);
+              }
+            }
+          });
+
+          setCallState(CallState.CREATING_ANSWER);
+        } else {
+          console.log(`Call ID "${id}" is available. Initializing a new call.`);
+          await initiateCall(id);
+        }
+      } catch (error) {
+        console.error('Error joining call:', error);
+        cleanUp();
+        setCallState(CallState.IDLE);
       }
-    } catch (error) {
-      console.error('Error joining call:', error);
-      cleanUp();
-      setCallState(CallState.IDLE);
-    }
-  }, [createPeerConnection, hangUp, initiateCall, cleanUp]);
+    },
+    [createPeerConnection, hangUp, initiateCall, cleanUp],
+  );
 
   const toggleMute = useCallback(() => {
     if (localStreamRef.current) {
       const newMutedState = !isMuted;
-      localStreamRef.current.getAudioTracks().forEach(track => {
+      localStreamRef.current.getAudioTracks().forEach((track) => {
         track.enabled = !newMutedState;
       });
       setIsMuted(newMutedState);
@@ -1273,11 +1366,14 @@ export const useWebRTC = (initialResolution: string) => {
   const toggleVideo = useCallback(() => {
     if (localStreamRef.current) {
       const newVideoState = !isVideoOff;
-      localStreamRef.current.getVideoTracks().forEach(track => {
+      localStreamRef.current.getVideoTracks().forEach((track) => {
         track.enabled = newVideoState;
       });
       setIsVideoOff(!newVideoState);
-      sendDataChannelMessage({ type: 'control', payload: { type: 'video', value: !newVideoState } });
+      sendDataChannelMessage({
+        type: 'control',
+        payload: { type: 'video', value: !newVideoState },
+      });
     }
   }, [isVideoOff, sendDataChannelMessage]);
 
@@ -1295,12 +1391,35 @@ export const useWebRTC = (initialResolution: string) => {
   }, []);
 
   return {
-    localStream, remoteStream, connectionState, isMuted, isVideoOff, callState, setCallState,
-    errorMessage, callId, peerId, isE2EEActive, callStats, resolution, setResolution,
-    isRemoteMuted, isRemoteVideoOff,
-    enableE2EE, setEnableE2EE,
-    enterLobby, startCall, joinCall, ringUser, declineCall, toggleMute, toggleVideo, hangUp, reset,
-    setOnChatMessage, sendMessage,
+    localStream,
+    remoteStream,
+    connectionState,
+    isMuted,
+    isVideoOff,
+    callState,
+    setCallState,
+    errorMessage,
+    callId,
+    peerId,
+    isE2EEActive,
+    callStats,
+    resolution,
+    setResolution,
+    isRemoteMuted,
+    isRemoteVideoOff,
+    enableE2EE,
+    setEnableE2EE,
+    enterLobby,
+    startCall,
+    joinCall,
+    ringUser,
+    declineCall,
+    toggleMute,
+    toggleVideo,
+    hangUp,
+    reset,
+    setOnChatMessage,
+    sendMessage,
   };
 };
 ```
@@ -1324,6 +1443,7 @@ git commit -m "fix(webrtc): double initMedia, stale closures, concurrent call gu
 ### Task 9: Extract shared icon components
 
 **Files:**
+
 - Create: `components/icons.tsx`
 - Modify: `components/Controls.tsx`
 - Modify: `components/Lobby.tsx`
@@ -1489,6 +1609,7 @@ export const DeclineCallIcon: React.FC<IconProps> = ({ className }) => (
 - [ ] **Step 2: Update each component to import from `icons.tsx`**
 
 For each component file, remove the locally-defined icon components and add an import like:
+
 ```typescript
 import { MuteIcon, UnmuteIcon } from './icons';
 ```
@@ -1496,6 +1617,7 @@ import { MuteIcon, UnmuteIcon } from './icons';
 The exact imports depend on which icons each file uses. This is a mechanical change: delete the local icon definitions, add the import, verify the names match.
 
 Files to update:
+
 - `components/Controls.tsx` — uses `MuteIcon`, `UnmuteIcon`, `VideoOnIcon`, `VideoOffIcon`, `HangUpIcon`, `ChatIcon`
 - `components/Lobby.tsx` — uses `MuteIcon`, `UnmuteIcon`, `VideoOnIcon`, `VideoOffIcon`
 - `components/CallHistory.tsx` — uses `RejoinIcon`, `EditIcon`, `CheckIcon`, `CancelIcon`, `PinIcon`, `PinnedIcon`, `UserIcon`, `HistoryIcon`, `DeleteIcon`
@@ -1525,6 +1647,7 @@ git commit -m "refactor: extract shared icon components to icons.tsx"
 ### Task 10: Deduplicate generateUUID and fix imports
 
 **Files:**
+
 - Modify: `utils/user.ts`
 - Modify: `utils/history.ts`
 - Modify: `utils/pins.ts`
@@ -1563,19 +1686,25 @@ export const saveUserDisplayName = (name: string): void => {
 - [ ] **Step 2: Fix relative imports in `utils/history.ts` and `utils/pins.ts`**
 
 In `utils/history.ts`, change:
+
 ```typescript
 import { CallHistoryEntry } from '../types';
 ```
+
 to:
+
 ```typescript
 import { CallHistoryEntry } from '@/types';
 ```
 
 In `utils/pins.ts`, change:
+
 ```typescript
 import { PinnedEntry } from '../types';
 ```
+
 to:
+
 ```typescript
 import { PinnedEntry } from '@/types';
 ```
@@ -1592,6 +1721,7 @@ git commit -m "refactor: deduplicate generateUUID, use @/ path alias consistentl
 ### Task 11: Delete empty QRScanner and fix minor issues
 
 **Files:**
+
 - Delete: `components/QRScanner.tsx`
 - Modify: `index.css`
 
@@ -1604,23 +1734,29 @@ git rm components/QRScanner.tsx
 - [ ] **Step 2: Fix conflicting background color in `index.css`**
 
 In `index.css`, change line 11-12 from:
+
 ```css
-    @apply bg-gray-950 text-slate-200 antialiased font-sans;
-    background-color: #0d1117;
+@apply bg-gray-950 text-slate-200 antialiased font-sans;
+background-color: #0d1117;
 ```
+
 to:
+
 ```css
-    @apply text-slate-200 antialiased font-sans;
-    background-color: #0d1117;
+@apply text-slate-200 antialiased font-sans;
+background-color: #0d1117;
 ```
 
 Also change line 36 from:
+
 ```css
-    border: transparent;
+border: transparent;
 ```
+
 to:
+
 ```css
-    border-color: transparent;
+border-color: transparent;
 ```
 
 - [ ] **Step 3: Commit**
@@ -1637,6 +1773,7 @@ git commit -m "chore: remove empty QRScanner, fix conflicting CSS"
 ### Task 12: Fix usePresence cleanup
 
 **Files:**
+
 - Modify: `hooks/usePresence.ts`
 
 - [ ] **Step 1: Rewrite usePresence with proper cleanup**
@@ -1662,17 +1799,20 @@ export const usePresence = (userId: string | null) => {
       const onDisconnect = userStatusRef.onDisconnect();
       onDisconnectRef.current = onDisconnect;
 
-      onDisconnect.set({
-        isOnline: false,
-        lastChanged: ServerValue.TIMESTAMP,
-      }).then(() => {
-        userStatusRef.set({
-          isOnline: true,
+      onDisconnect
+        .set({
+          isOnline: false,
           lastChanged: ServerValue.TIMESTAMP,
+        })
+        .then(() => {
+          userStatusRef.set({
+            isOnline: true,
+            lastChanged: ServerValue.TIMESTAMP,
+          });
+        })
+        .catch((error: Error) => {
+          console.error('Error setting presence:', error);
         });
-      }).catch((error: Error) => {
-        console.error('Error setting presence:', error);
-      });
     });
 
     return () => {
@@ -1682,10 +1822,12 @@ export const usePresence = (userId: string | null) => {
         onDisconnectRef.current.cancel().catch(() => {});
         onDisconnectRef.current = null;
       }
-      userStatusRef.set({
-        isOnline: false,
-        lastChanged: ServerValue.TIMESTAMP,
-      }).catch(() => {});
+      userStatusRef
+        .set({
+          isOnline: false,
+          lastChanged: ServerValue.TIMESTAMP,
+        })
+        .catch(() => {});
     };
   }, [userId]);
 };
@@ -1703,6 +1845,7 @@ git commit -m "fix(presence): cancel onDisconnect and set offline on unmount"
 ### Task 13: Fix usePeerStatus array stability
 
 **Files:**
+
 - Modify: `hooks/usePeerStatus.ts`
 - Modify: `App.tsx` (to stabilize the peerIds memo)
 
@@ -1720,27 +1863,27 @@ export const usePeerStatus = (peerIds: string[]) => {
     const listeners: { [key: string]: (snapshot: any) => void } = {};
 
     // Clear stale entries for peers no longer in the list
-    setPeerStatus(prev => {
+    setPeerStatus((prev) => {
       const next: { [key: string]: PeerStatus } = {};
-      peerIds.forEach(id => {
+      peerIds.forEach((id) => {
         if (prev[id]) next[id] = prev[id];
       });
       return next;
     });
 
-    peerIds.forEach(id => {
+    peerIds.forEach((id) => {
       const peerStatusRef = db.ref(`/status/${id}`);
 
       const listener = (snapshot: any) => {
         const status = snapshot.val();
         if (status) {
-          setPeerStatus(prev => ({
+          setPeerStatus((prev) => ({
             ...prev,
             [id]: status,
           }));
         } else {
           // Peer has no status document — treat as offline
-          setPeerStatus(prev => ({
+          setPeerStatus((prev) => ({
             ...prev,
             [id]: { isOnline: false, lastChanged: 0 },
           }));
@@ -1752,7 +1895,7 @@ export const usePeerStatus = (peerIds: string[]) => {
     });
 
     return () => {
-      peerIds.forEach(id => {
+      peerIds.forEach((id) => {
         const peerStatusRef = db.ref(`/status/${id}`);
         if (listeners[id]) {
           peerStatusRef.off('value', listeners[id]);
@@ -1768,9 +1911,14 @@ export const usePeerStatus = (peerIds: string[]) => {
 - [ ] **Step 2: In App.tsx, ensure the peerIds memo is stable**
 
 The existing code at line 53 already uses `useMemo`:
+
 ```typescript
-const peerIdsToWatch = useMemo(() => pinned.map(p => p.peerId).filter((id): id is string => !!id), [pinned]);
+const peerIdsToWatch = useMemo(
+  () => pinned.map((p) => p.peerId).filter((id): id is string => !!id),
+  [pinned],
+);
 ```
+
 This is already correct — it only recalculates when `pinned` changes. No change needed here.
 
 - [ ] **Step 3: Commit**
@@ -1785,6 +1933,7 @@ git commit -m "fix(peer-status): clear stale entries, handle null snapshots"
 ### Task 14: Fix useAuth concurrent init guard
 
 **Files:**
+
 - Modify: `hooks/useAuth.ts`
 
 - [ ] **Step 1: Add init guard to useAuth**
@@ -1812,9 +1961,12 @@ export const useAuth = () => {
         console.error('Failed to authenticate:', error);
 
         let errorMessage = 'Authentication failed';
-        if (error.code === 'auth/configuration-not-found' ||
-            (error.message && error.message.includes('CONFIGURATION_NOT_FOUND'))) {
-          errorMessage = 'Anonymous authentication is not enabled. Please enable it in Firebase Console: Authentication > Sign-in method > Anonymous';
+        if (
+          error.code === 'auth/configuration-not-found' ||
+          (error.message && error.message.includes('CONFIGURATION_NOT_FOUND'))
+        ) {
+          errorMessage =
+            'Anonymous authentication is not enabled. Please enable it in Firebase Console: Authentication > Sign-in method > Anonymous';
         } else if (error.message) {
           errorMessage = error.message;
         }
@@ -1855,6 +2007,7 @@ git commit -m "fix(auth): prevent concurrent initAuth calls"
 ### Task 15: Fix useDraggable listener leak
 
 **Files:**
+
 - Modify: `hooks/useDraggable.ts`
 
 - [ ] **Step 1: Add cleanup for active drag listeners**
@@ -1867,54 +2020,63 @@ export const useDraggable = (ref: React.RefObject<HTMLDivElement | null>) => {
   const offsetRef = useRef({ x: 0, y: 0 });
   const isDraggingRef = useRef(false);
 
-  const handlePointerMove = useCallback((event: PointerEvent) => {
-    if (!ref.current) return;
-    event.preventDefault();
+  const handlePointerMove = useCallback(
+    (event: PointerEvent) => {
+      if (!ref.current) return;
+      event.preventDefault();
 
-    const newX = event.clientX - offsetRef.current.x;
-    const newY = event.clientY - offsetRef.current.y;
+      const newX = event.clientX - offsetRef.current.x;
+      const newY = event.clientY - offsetRef.current.y;
 
-    posRef.current = { x: newX, y: newY };
-    ref.current.style.transform = `translate(${newX}px, ${newY}px)`;
-  }, [ref]);
+      posRef.current = { x: newX, y: newY };
+      ref.current.style.transform = `translate(${newX}px, ${newY}px)`;
+    },
+    [ref],
+  );
 
-  const handlePointerUp = useCallback((event: PointerEvent) => {
-    event.preventDefault();
-    if (!ref.current) return;
+  const handlePointerUp = useCallback(
+    (event: PointerEvent) => {
+      event.preventDefault();
+      if (!ref.current) return;
 
-    try {
-      ref.current.releasePointerCapture(event.pointerId);
-    } catch {
-      // Pointer may not be captured (e.g., element removed during drag)
-    }
-    document.removeEventListener('pointermove', handlePointerMove);
-    document.removeEventListener('pointerup', handlePointerUp);
-    isDraggingRef.current = false;
+      try {
+        ref.current.releasePointerCapture(event.pointerId);
+      } catch {
+        // Pointer may not be captured (e.g., element removed during drag)
+      }
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
+      isDraggingRef.current = false;
 
-    if (ref.current) ref.current.style.cursor = 'move';
-    document.body.style.userSelect = 'auto';
-  }, [ref, handlePointerMove]);
+      if (ref.current) ref.current.style.cursor = 'move';
+      document.body.style.userSelect = 'auto';
+    },
+    [ref, handlePointerMove],
+  );
 
-  const onPointerDown = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
-    if ((event.target as HTMLElement).closest('button')) {
-      return;
-    }
-    event.preventDefault();
-    if (!ref.current) return;
+  const onPointerDown = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      if ((event.target as HTMLElement).closest('button')) {
+        return;
+      }
+      event.preventDefault();
+      if (!ref.current) return;
 
-    offsetRef.current = {
-      x: event.clientX - posRef.current.x,
-      y: event.clientY - posRef.current.y,
-    };
+      offsetRef.current = {
+        x: event.clientX - posRef.current.x,
+        y: event.clientY - posRef.current.y,
+      };
 
-    ref.current.setPointerCapture(event.pointerId);
-    document.addEventListener('pointermove', handlePointerMove);
-    document.addEventListener('pointerup', handlePointerUp);
-    isDraggingRef.current = true;
+      ref.current.setPointerCapture(event.pointerId);
+      document.addEventListener('pointermove', handlePointerMove);
+      document.addEventListener('pointerup', handlePointerUp);
+      isDraggingRef.current = true;
 
-    ref.current.style.cursor = 'grabbing';
-    document.body.style.userSelect = 'none';
-  }, [ref, handlePointerMove, handlePointerUp]);
+      ref.current.style.cursor = 'grabbing';
+      document.body.style.userSelect = 'none';
+    },
+    [ref, handlePointerMove, handlePointerUp],
+  );
 
   // Reset position on window resize
   useEffect(() => {
@@ -1957,25 +2119,77 @@ git commit -m "fix(draggable): cleanup document listeners on unmount, try/catch 
 ### Task 16: Use crypto.getRandomValues for ID generation
 
 **Files:**
+
 - Modify: `utils/id.ts`
 
 - [ ] **Step 1: Rewrite id.ts with secure random**
 
 ```typescript
 const adjectives = [
-  'quick', 'happy', 'bright', 'calm', 'brave', 'eager', 'fancy', 'giant',
-  'jolly', 'kind', 'lively', 'magic', 'noble', 'proud', 'silly', 'sunny',
-  'tiny', 'wise', 'zesty', 'vivid'
+  'quick',
+  'happy',
+  'bright',
+  'calm',
+  'brave',
+  'eager',
+  'fancy',
+  'giant',
+  'jolly',
+  'kind',
+  'lively',
+  'magic',
+  'noble',
+  'proud',
+  'silly',
+  'sunny',
+  'tiny',
+  'wise',
+  'zesty',
+  'vivid',
 ];
 const nouns = [
-  'river', 'ocean', 'cloud', 'forest', 'meadow', 'comet', 'star', 'dream',
-  'wave', 'glade', 'haven', 'light', 'peak', 'spirit', 'storm', 'stream',
-  'world', 'vista', 'zephyr', 'echo'
+  'river',
+  'ocean',
+  'cloud',
+  'forest',
+  'meadow',
+  'comet',
+  'star',
+  'dream',
+  'wave',
+  'glade',
+  'haven',
+  'light',
+  'peak',
+  'spirit',
+  'storm',
+  'stream',
+  'world',
+  'vista',
+  'zephyr',
+  'echo',
 ];
 const verbs = [
-  'sings', 'dances', 'jumps', 'flies', 'runs', 'glows', 'shines', 'soars',
-  'glides', 'floats', 'beams', 'drifts', 'wanders', 'rises', 'falls', 'spins',
-  'weaves', 'blooms', 'thrives', 'starts'
+  'sings',
+  'dances',
+  'jumps',
+  'flies',
+  'runs',
+  'glows',
+  'shines',
+  'soars',
+  'glides',
+  'floats',
+  'beams',
+  'drifts',
+  'wanders',
+  'rises',
+  'falls',
+  'spins',
+  'weaves',
+  'blooms',
+  'thrives',
+  'starts',
 ];
 
 function secureRandomIndex(max: number): number {
@@ -1996,7 +2210,7 @@ export const generateUUID = (): string => {
   crypto.getRandomValues(bytes);
   bytes[6] = (bytes[6] & 0x0f) | 0x40; // version 4
   bytes[8] = (bytes[8] & 0x3f) | 0x80; // variant 10
-  const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 };
 ```
@@ -2013,43 +2227,50 @@ git commit -m "fix(security): use crypto.getRandomValues for call IDs and UUIDs"
 ### Task 17: Pin CDN version and fix manifest orientation
 
 **Files:**
+
 - Modify: `index.html`
 - Modify: `public/manifest.json`
 
 - [ ] **Step 1: Pin React version in import map**
 
 In `index.html`, change the import map from:
+
 ```html
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://aistudiocdn.com/react@^19.1.1",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
-    "react/": "https://aistudiocdn.com/react@^19.1.1/"
+<script type="importmap">
+  {
+    "imports": {
+      "react": "https://aistudiocdn.com/react@^19.1.1",
+      "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+      "react/": "https://aistudiocdn.com/react@^19.1.1/"
+    }
   }
-}
 </script>
 ```
+
 to:
+
 ```html
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://aistudiocdn.com/react@19.1.1",
-    "react-dom/": "https://aistudiocdn.com/react-dom@19.1.1/",
-    "react/": "https://aistudiocdn.com/react@19.1.1/"
+<script type="importmap">
+  {
+    "imports": {
+      "react": "https://aistudiocdn.com/react@19.1.1",
+      "react-dom/": "https://aistudiocdn.com/react-dom@19.1.1/",
+      "react/": "https://aistudiocdn.com/react@19.1.1/"
+    }
   }
-}
 </script>
 ```
 
 - [ ] **Step 2: Fix manifest.json orientation**
 
 In `public/manifest.json`, change:
+
 ```json
   "orientation": "portrait-primary",
 ```
+
 to:
+
 ```json
   "orientation": "any",
 ```
@@ -2066,6 +2287,7 @@ git commit -m "fix(security): pin CDN version, allow any orientation"
 ### Task 18: Fix vitest.config.ts path alias
 
 **Files:**
+
 - Modify: `vitest.config.ts`
 
 - [ ] **Step 1: Add path alias to vitest config**
@@ -2101,6 +2323,7 @@ git commit -m "fix(test): add @/ path alias to vitest config"
 ### Task 19: Improve test setup mocks
 
 **Files:**
+
 - Modify: `test/setup.ts`
 
 - [ ] **Step 1: Rewrite test setup with deeper mocks**
@@ -2220,18 +2443,19 @@ git commit -m "fix(test): improve Firebase, WebRTC, and crypto mocks with realis
 
 **19 tasks across 6 phases:**
 
-| Phase | Tasks | Commit Message Prefix |
-|-------|-------|----------------------|
-| 1. CI/CD Pipeline | Tasks 1-4 | `fix(ci):` |
-| 2. Security | Tasks 5-7 | `fix(security):` |
-| 3. Critical Bugs | Task 8 | `fix(webrtc):` |
-| 4. Code Quality | Tasks 9-11 | `refactor:` / `chore:` |
-| 5. Hook Fixes | Tasks 12-15 | `fix(...):` |
-| 6. Hardening | Tasks 16-19 | `fix(security):` / `fix(test):` |
+| Phase             | Tasks       | Commit Message Prefix           |
+| ----------------- | ----------- | ------------------------------- |
+| 1. CI/CD Pipeline | Tasks 1-4   | `fix(ci):`                      |
+| 2. Security       | Tasks 5-7   | `fix(security):`                |
+| 3. Critical Bugs  | Task 8      | `fix(webrtc):`                  |
+| 4. Code Quality   | Tasks 9-11  | `refactor:` / `chore:`          |
+| 5. Hook Fixes     | Tasks 12-15 | `fix(...):`                     |
+| 6. Hardening      | Tasks 16-19 | `fix(security):` / `fix(test):` |
 
 **Dependencies:** Phase 1 must go first. Phases 2-6 are independent of each other and can run in parallel. Within Phase 4, Task 9 (icons) should precede Task 10 since both modify component files.
 
 **Out of scope for this plan (deferred to follow-up):**
+
 - App.tsx decomposition (574 lines → smaller components/hooks)
 - Writing new test cases (only test infrastructure is improved here)
 - Alias editing logic extraction from CallHistory/PinnedCalls

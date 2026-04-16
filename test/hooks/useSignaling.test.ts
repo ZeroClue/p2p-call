@@ -26,7 +26,7 @@ vi.mock('../../firebase', () => {
     remove: mockRemove,
     push: mockPush,
     get: mockGet,
-    child: vi.fn(function(this: any, childPath: string) {
+    child: vi.fn(function (this: unknown, childPath: string) {
       this._lastChild = childPath;
       return this;
     }),
@@ -55,7 +55,7 @@ vi.mock('../../utils/crypto', () => ({
     key: { type: 'secret', algorithm: { name: 'AES-GCM' } },
     rawKey: new ArrayBuffer(32),
   })),
-  importKey: vi.fn(async (rawKey: ArrayBuffer) => ({
+  importKey: vi.fn(async (_rawKey: ArrayBuffer) => ({
     type: 'secret',
     algorithm: { name: 'AES-GCM' },
   })),
@@ -109,14 +109,14 @@ describe('useSignaling', () => {
       ontrack: null,
       ondatachannel: null,
       currentRemoteDescription: null,
-    } as any;
+    } as unknown as RTCPeerConnection;
 
     // Create mock stream
     mockStream = {
       getTracks: vi.fn(() => []),
       getAudioTracks: vi.fn(() => [{ enabled: true, stop: vi.fn() }]),
       getVideoTracks: vi.fn(() => [{ enabled: true, stop: vi.fn() }]),
-    } as any;
+    } as unknown as MediaStream;
   });
 
   afterEach(() => {
@@ -126,11 +126,17 @@ describe('useSignaling', () => {
   describe('initiateCall', () => {
     it('should write offer to Firebase and set call state', async () => {
       const { result } = renderHook(() =>
-        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef)
+        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
       );
 
       await act(async () => {
-        await result.current.initiateCall('test-call-id', mockPeerConnection, mockStream, true, false);
+        await result.current.initiateCall(
+          'test-call-id',
+          mockPeerConnection,
+          mockStream,
+          true,
+          false,
+        );
       });
 
       // Verify call state changes
@@ -146,11 +152,17 @@ describe('useSignaling', () => {
 
     it('should set up ICE candidate handler', async () => {
       const { result } = renderHook(() =>
-        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef)
+        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
       );
 
       await act(async () => {
-        await result.current.initiateCall('test-call-id', mockPeerConnection, mockStream, true, false);
+        await result.current.initiateCall(
+          'test-call-id',
+          mockPeerConnection,
+          mockStream,
+          true,
+          false,
+        );
       });
 
       // Verify ICE candidate handler is set
@@ -159,21 +171,29 @@ describe('useSignaling', () => {
 
     it('should use RINGING state when isRinging is true', async () => {
       const { result } = renderHook(() =>
-        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef)
+        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
       );
 
       await act(async () => {
-        await result.current.initiateCall('test-call-id', mockPeerConnection, mockStream, true, true);
+        await result.current.initiateCall(
+          'test-call-id',
+          mockPeerConnection,
+          mockStream,
+          true,
+          true,
+        );
       });
 
       expect(mockCallbacks.onCallStateChange).toHaveBeenCalledWith(CallState.RINGING);
       // Should not transition to WAITING_FOR_ANSWER when ringing
-      expect(mockCallbacks.onCallStateChange).not.toHaveBeenCalledWith(CallState.WAITING_FOR_ANSWER);
+      expect(mockCallbacks.onCallStateChange).not.toHaveBeenCalledWith(
+        CallState.WAITING_FOR_ANSWER,
+      );
     });
 
     it('should guard against concurrent operations', async () => {
       const { result } = renderHook(() =>
-        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef)
+        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
       );
 
       // Set operation in progress
@@ -182,7 +202,13 @@ describe('useSignaling', () => {
       });
 
       await act(async () => {
-        await result.current.initiateCall('test-call-id', mockPeerConnection, mockStream, true, false);
+        await result.current.initiateCall(
+          'test-call-id',
+          mockPeerConnection,
+          mockStream,
+          true,
+          false,
+        );
       });
 
       // Should not proceed with the call - no state changes
@@ -191,11 +217,17 @@ describe('useSignaling', () => {
 
     it('should set MEDIA_ERROR state when stream is null', async () => {
       const { result } = renderHook(() =>
-        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef)
+        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
       );
 
       await act(async () => {
-        await result.current.initiateCall('test-call-id', mockPeerConnection, null as any, true, false);
+        await result.current.initiateCall(
+          'test-call-id',
+          mockPeerConnection,
+          null as any,
+          true,
+          false,
+        );
       });
 
       expect(mockCallbacks.onCallStateChange).toHaveBeenCalledWith(CallState.MEDIA_ERROR);
@@ -203,11 +235,17 @@ describe('useSignaling', () => {
 
     it('should add tracked listeners for answer and ICE candidates', async () => {
       const { result } = renderHook(() =>
-        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef)
+        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
       );
 
       await act(async () => {
-        await result.current.initiateCall('test-call-id', mockPeerConnection, mockStream, true, false);
+        await result.current.initiateCall(
+          'test-call-id',
+          mockPeerConnection,
+          mockStream,
+          true,
+          false,
+        );
       });
 
       // Verify listeners were registered (2 calls: value + child_added)
@@ -237,14 +275,14 @@ describe('useSignaling', () => {
         remove: vi.fn().mockResolvedValue(undefined),
         push: vi.fn().mockResolvedValue({ key: 'mock-key' }),
         get: mockGet,
-        child: vi.fn(function(this: any, childPath: string) {
+        child: vi.fn(function (this: unknown, childPath: string) {
           this._lastChild = childPath;
           return this;
         }),
       }));
 
       const { result } = renderHook(() =>
-        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef)
+        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
       );
 
       await act(async () => {
@@ -273,14 +311,14 @@ describe('useSignaling', () => {
         remove: vi.fn().mockResolvedValue(undefined),
         push: vi.fn().mockResolvedValue({ key: 'mock-key' }),
         get: mockGet,
-        child: vi.fn(function(this: any, childPath: string) {
+        child: vi.fn(function (this: unknown, childPath: string) {
           this._lastChild = childPath;
           return this;
         }),
       }));
 
       const { result } = renderHook(() =>
-        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef)
+        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
       );
 
       // The joinCall will set isOperationInProgressRef to true, then try to call initiateCall
@@ -294,7 +332,7 @@ describe('useSignaling', () => {
 
       // Should have logged the message about call being available
       expect(consoleSpy).toHaveBeenCalledWith(
-        'Call ID "test-call-id" is available. Initializing a new call.'
+        'Call ID "test-call-id" is available. Initializing a new call.',
       );
 
       consoleSpy.mockRestore();
@@ -302,7 +340,7 @@ describe('useSignaling', () => {
 
     it('should guard against concurrent operations', async () => {
       const { result } = renderHook(() =>
-        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef)
+        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
       );
 
       // Set operation in progress
@@ -322,7 +360,7 @@ describe('useSignaling', () => {
   describe('declineCall', () => {
     it('should write declined flag and set IDLE state', async () => {
       const { result } = renderHook(() =>
-        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef)
+        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
       );
 
       await act(async () => {
@@ -342,7 +380,7 @@ describe('useSignaling', () => {
       const peer = { callId: 'peer-call-123', alias: 'Peer User', peerId: 'peer-123' };
 
       const { result } = renderHook(() =>
-        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef)
+        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
       );
 
       await act(async () => {
@@ -363,7 +401,7 @@ describe('useSignaling', () => {
       const peer = { callId: 'peer-call-123', alias: 'Peer User' };
 
       const { result } = renderHook(() =>
-        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef)
+        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
       );
 
       await act(async () => {
@@ -378,7 +416,7 @@ describe('useSignaling', () => {
       const peer = { callId: 'peer-call-123', alias: 'Peer User', peerId: 'peer-123' };
 
       const { result } = renderHook(() =>
-        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef)
+        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
       );
 
       const setTimeoutSpy = vi.spyOn(global, 'setTimeout');
@@ -388,10 +426,7 @@ describe('useSignaling', () => {
       });
 
       // Verify setTimeout was called with RING_TIMEOUT_MS
-      expect(setTimeoutSpy).toHaveBeenCalledWith(
-        expect.any(Function),
-        30000
-      );
+      expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 30000);
 
       setTimeoutSpy.mockRestore();
     });
@@ -415,19 +450,25 @@ describe('useSignaling', () => {
           val: () => null,
           exists: () => false,
         }),
-        child: vi.fn(function(this: any, childPath: string) {
+        child: vi.fn(function (this: unknown, childPath: string) {
           this._lastChild = childPath;
           return this;
         }),
       }));
 
       const { result } = renderHook(() =>
-        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef)
+        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
       );
 
       // Initiate a call to set up listeners
       await act(async () => {
-        await result.current.initiateCall('test-call-id', mockPeerConnection, mockStream, true, false);
+        await result.current.initiateCall(
+          'test-call-id',
+          mockPeerConnection,
+          mockStream,
+          true,
+          false,
+        );
       });
 
       // Track how many times 'on' was called
@@ -459,19 +500,25 @@ describe('useSignaling', () => {
           val: () => null,
           exists: () => false,
         }),
-        child: vi.fn(function(this: any, childPath: string) {
+        child: vi.fn(function (this: unknown, childPath: string) {
           this._lastChild = childPath;
           return this;
         }),
       }));
 
       const { result } = renderHook(() =>
-        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef)
+        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
       );
 
       // Initiate a call to set up refs
       await act(async () => {
-        await result.current.initiateCall('test-call-id', mockPeerConnection, mockStream, true, false);
+        await result.current.initiateCall(
+          'test-call-id',
+          mockPeerConnection,
+          mockStream,
+          true,
+          false,
+        );
       });
 
       // Reset remove mock to track new calls
@@ -501,19 +548,25 @@ describe('useSignaling', () => {
           val: () => null,
           exists: () => false,
         }),
-        child: vi.fn(function(this: any, childPath: string) {
+        child: vi.fn(function (this: unknown, childPath: string) {
           this._lastChild = childPath;
           return this;
         }),
       }));
 
       const { result } = renderHook(() =>
-        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef)
+        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
       );
 
       // Initiate a call to set up refs
       await act(async () => {
-        await result.current.initiateCall('test-call-id', mockPeerConnection, mockStream, true, false);
+        await result.current.initiateCall(
+          'test-call-id',
+          mockPeerConnection,
+          mockStream,
+          true,
+          false,
+        );
       });
 
       // Reset remove mock to track new calls
@@ -529,7 +582,7 @@ describe('useSignaling', () => {
 
     it('should reset E2EE active state', async () => {
       const { result } = renderHook(() =>
-        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef)
+        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
       );
 
       act(() => {
@@ -543,7 +596,7 @@ describe('useSignaling', () => {
   describe('setOperationInProgress', () => {
     it('should set the operation in progress flag', async () => {
       const { result } = renderHook(() =>
-        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef)
+        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
       );
 
       act(() => {
@@ -552,7 +605,13 @@ describe('useSignaling', () => {
 
       // Verify by trying to initiate call - it should be guarded
       await act(async () => {
-        await result.current.initiateCall('test-call-id', mockPeerConnection, mockStream, true, false);
+        await result.current.initiateCall(
+          'test-call-id',
+          mockPeerConnection,
+          mockStream,
+          true,
+          false,
+        );
       });
 
       // No state changes should occur
@@ -564,7 +623,13 @@ describe('useSignaling', () => {
       });
 
       await act(async () => {
-        await result.current.initiateCall('test-call-id', mockPeerConnection, mockStream, true, false);
+        await result.current.initiateCall(
+          'test-call-id',
+          mockPeerConnection,
+          mockStream,
+          true,
+          false,
+        );
       });
 
       // Now state changes should occur
@@ -590,14 +655,14 @@ describe('useSignaling', () => {
           val: () => null,
           exists: () => false,
         }),
-        child: vi.fn(function(this: any, childPath: string) {
+        child: vi.fn(function (this: unknown, childPath: string) {
           this._lastChild = childPath;
           return this;
         }),
       }));
 
       const { result } = renderHook(() =>
-        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef)
+        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
       );
 
       // Reset mock to track calls
@@ -606,7 +671,13 @@ describe('useSignaling', () => {
 
       // Initiate call which adds listeners
       await act(async () => {
-        await result.current.initiateCall('test-call-id', mockPeerConnection, mockStream, true, false);
+        await result.current.initiateCall(
+          'test-call-id',
+          mockPeerConnection,
+          mockStream,
+          true,
+          false,
+        );
       });
 
       // Should have added 2 listeners (value + child_added)
@@ -624,11 +695,17 @@ describe('useSignaling', () => {
   describe('Firebase ref paths', () => {
     it('should use correct path for call doc', async () => {
       const { result } = renderHook(() =>
-        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef)
+        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
       );
 
       await act(async () => {
-        await result.current.initiateCall('my-call-id', mockPeerConnection, mockStream, true, false);
+        await result.current.initiateCall(
+          'my-call-id',
+          mockPeerConnection,
+          mockStream,
+          true,
+          false,
+        );
       });
 
       expect(firebaseModule.db.ref).toHaveBeenCalledWith('calls/my-call-id');
@@ -638,7 +715,7 @@ describe('useSignaling', () => {
       const peer = { callId: 'peer-call-123', alias: 'Peer User', peerId: 'peer-user-id' };
 
       const { result } = renderHook(() =>
-        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef)
+        useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
       );
 
       await act(async () => {

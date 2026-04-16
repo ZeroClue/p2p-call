@@ -18,7 +18,7 @@ export const getHistory = (): CallHistoryEntry[] => {
       }
     }
   } catch (error) {
-    console.error("Failed to parse call history from localStorage", error);
+    console.error('Failed to parse call history from localStorage', error);
     // If parsing fails, it's safer to start with a clean slate
     localStorage.removeItem(HISTORY_KEY);
   }
@@ -36,6 +36,6 @@ export const saveHistory = (history: CallHistoryEntry[]): void => {
     const historyJson = JSON.stringify(limitedHistory);
     localStorage.setItem(HISTORY_KEY, historyJson);
   } catch (error) {
-    console.error("Failed to save call history to localStorage", error);
+    console.error('Failed to save call history to localStorage', error);
   }
 };

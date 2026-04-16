@@ -37,6 +37,7 @@ You can find these values in:
 ## Verification
 
 After adding the secrets, the next deployment will:
+
 1. Generate `firebase.ts` from environment variables
 2. Build the application with the Firebase configuration
 3. Deploy to Firebase Hosting

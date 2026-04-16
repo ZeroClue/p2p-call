@@ -7,8 +7,7 @@ const MAX_ZOOM = 4;
 const getDistance = (touches: React.TouchList): number => {
   const [touch1, touch2] = [touches[0], touches[1]];
   return Math.sqrt(
-    Math.pow(touch2.clientX - touch1.clientX, 2) +
-    Math.pow(touch2.clientY - touch1.clientY, 2)
+    Math.pow(touch2.clientX - touch1.clientX, 2) + Math.pow(touch2.clientY - touch1.clientY, 2),
   );
 };
 
@@ -23,27 +22,30 @@ export const usePinchToZoom = () => {
   const initialDistanceRef = useRef<number | null>(null);
   const lastZoomRef = useRef(1);
 
-  const onTouchStart = useCallback((event: React.TouchEvent) => {
-    if (event.touches.length === 2) {
-      event.preventDefault();
-      setIsPinching(true);
-      initialDistanceRef.current = getDistance(event.touches);
-      lastZoomRef.current = zoom;
-    }
-  }, [zoom]);
+  const onTouchStart = useCallback(
+    (event: React.TouchEvent) => {
+      if (event.touches.length === 2) {
+        event.preventDefault();
+        setIsPinching(true);
+        initialDistanceRef.current = getDistance(event.touches);
+        lastZoomRef.current = zoom;
+      }
+    },
+    [zoom],
+  );
 
   const onTouchMove = useCallback((event: React.TouchEvent) => {
     if (event.touches.length === 2 && initialDistanceRef.current) {
       event.preventDefault();
-      
+
       const newDistance = getDistance(event.touches);
       const scale = newDistance / initialDistanceRef.current;
-      
+
       let newZoom = lastZoomRef.current * scale;
-      
+
       // Clamp the zoom level to prevent extreme values
       newZoom = Math.max(MIN_ZOOM, Math.min(newZoom, MAX_ZOOM));
-      
+
       setZoom(newZoom);
     }
   }, []);

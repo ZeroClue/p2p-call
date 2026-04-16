@@ -26,7 +26,13 @@ describe('useCallHistory', () => {
 
   it('initializes with existing history', () => {
     const existingHistory: CallHistoryEntry[] = [
-      { callId: 'test-call', peerId: 'peer-123', alias: 'Test', timestamp: Date.now(), duration: 60 },
+      {
+        callId: 'test-call',
+        peerId: 'peer-123',
+        alias: 'Test',
+        timestamp: Date.now(),
+        duration: 60,
+      },
     ];
     vi.spyOn(historyUtils, 'getHistory').mockReturnValue(existingHistory);
     const { result } = renderHook(() => useCallHistory());
@@ -60,7 +66,13 @@ describe('useCallHistory', () => {
 
   it('togglePin adds entry when not pinned', () => {
     const { result } = renderHook(() => useCallHistory());
-    const entry: CallHistoryEntry = { callId: 'test-call', peerId: 'peer-123', alias: 'Test', timestamp: 123, duration: 0 };
+    const entry: CallHistoryEntry = {
+      callId: 'test-call',
+      peerId: 'peer-123',
+      alias: 'Test',
+      timestamp: 123,
+      duration: 0,
+    };
     act(() => {
       result.current.togglePin(entry);
     });
@@ -70,7 +82,13 @@ describe('useCallHistory', () => {
 
   it('togglePin removes entry when already pinned', () => {
     const { result } = renderHook(() => useCallHistory());
-    const entry: CallHistoryEntry = { callId: 'test-call', peerId: 'peer-123', alias: 'Test', timestamp: 123, duration: 0 };
+    const entry: CallHistoryEntry = {
+      callId: 'test-call',
+      peerId: 'peer-123',
+      alias: 'Test',
+      timestamp: 123,
+      duration: 0,
+    };
     act(() => {
       result.current.togglePin(entry);
     });
@@ -83,7 +101,13 @@ describe('useCallHistory', () => {
 
   it('updatePinAlias updates pinned entry', () => {
     const { result } = renderHook(() => useCallHistory());
-    const entry: CallHistoryEntry = { callId: 'test-call', peerId: 'peer-123', alias: 'Test', timestamp: 123, duration: 0 };
+    const entry: CallHistoryEntry = {
+      callId: 'test-call',
+      peerId: 'peer-123',
+      alias: 'Test',
+      timestamp: 123,
+      duration: 0,
+    };
     act(() => {
       result.current.togglePin(entry);
     });
@@ -95,7 +119,13 @@ describe('useCallHistory', () => {
 
   it('unpin removes pinned entry', () => {
     const { result } = renderHook(() => useCallHistory());
-    const entry: CallHistoryEntry = { callId: 'test-call', peerId: 'peer-123', alias: 'Test', timestamp: 123, duration: 0 };
+    const entry: CallHistoryEntry = {
+      callId: 'test-call',
+      peerId: 'peer-123',
+      alias: 'Test',
+      timestamp: 123,
+      duration: 0,
+    };
     act(() => {
       result.current.togglePin(entry);
     });
@@ -108,7 +138,9 @@ describe('useCallHistory', () => {
 
   it('restoreData sets history and pinned', () => {
     const { result } = renderHook(() => useCallHistory());
-    const newHistory: CallHistoryEntry[] = [{ callId: 'h1', peerId: 'p1', timestamp: 111, duration: 10 }];
+    const newHistory: CallHistoryEntry[] = [
+      { callId: 'h1', peerId: 'p1', timestamp: 111, duration: 10 },
+    ];
     const newPinned: PinnedEntry[] = [{ callId: 'pin1', alias: 'Pin', peerId: 'p2' }];
     act(() => {
       result.current.restoreData({ history: newHistory, pinned: newPinned });
@@ -130,7 +162,13 @@ describe('useCallHistory', () => {
   it('persists pinned to localStorage', () => {
     const saveSpy = vi.spyOn(pinsUtils, 'savePinned');
     const { result } = renderHook(() => useCallHistory());
-    const entry: CallHistoryEntry = { callId: 'test-call', peerId: 'peer-123', alias: 'Test', timestamp: 123, duration: 0 };
+    const entry: CallHistoryEntry = {
+      callId: 'test-call',
+      peerId: 'peer-123',
+      alias: 'Test',
+      timestamp: 123,
+      duration: 0,
+    };
     act(() => {
       result.current.togglePin(entry);
     });

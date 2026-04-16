@@ -34,19 +34,25 @@ export const useIncomingCall = (
     return () => incomingCallRef.off('value', listener);
   }, [userId, onCallStateChange]);
 
-  const handleAcceptCall = useCallback((joinCallFn: (id: string) => void) => {
-    if (incomingCall) {
-      joinCallFn(incomingCall.callId);
-    }
-  }, [incomingCall]);
+  const handleAcceptCall = useCallback(
+    (joinCallFn: (id: string) => void) => {
+      if (incomingCall) {
+        joinCallFn(incomingCall.callId);
+      }
+    },
+    [incomingCall],
+  );
 
-  const handleDeclineCall = useCallback((declineCallFn: (id: string) => Promise<void>, resetFn: () => void) => {
-    if (incomingCall) {
-      declineCallFn(incomingCall.callId);
-    }
-    setIncomingCall(null);
-    resetFn();
-  }, [incomingCall]);
+  const handleDeclineCall = useCallback(
+    (declineCallFn: (id: string) => Promise<void>, resetFn: () => void) => {
+      if (incomingCall) {
+        declineCallFn(incomingCall.callId);
+      }
+      setIncomingCall(null);
+      resetFn();
+    },
+    [incomingCall],
+  );
 
   return { incomingCall, handleAcceptCall, handleDeclineCall };
 };

@@ -4,12 +4,7 @@
   },
   "hosting": {
     "public": "dist",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**",
-      "firebase.ts"
-    ],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**", "firebase.ts"],
     "rewrites": [
       {
         "source": "**",

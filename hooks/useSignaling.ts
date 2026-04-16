@@ -5,7 +5,6 @@ import { generateCallId } from '../utils/id';
 import { getUserId, getUserDisplayName } from '../utils/user';
 import { generateKey, importKey } from '../utils/crypto';
 
-const MAX_RECONNECTION_ATTEMPTS = 3;
 const RING_TIMEOUT_MS = 30000;
 
 /**
@@ -63,7 +62,7 @@ export const useSignaling = (
   callbacks: SignalingCallbacks,
   callStateRef: React.MutableRefObject<CallState>,
   peerIdRef: React.MutableRefObject<string | null>,
-  enableE2EERef: React.MutableRefObject<boolean>
+  _enableE2EERef: React.MutableRefObject<boolean>,
 ) => {
   const { onCallStateChange, onSetCallId, onSetPeerId, onSetE2EEActive } = callbacks;
 
@@ -92,7 +91,7 @@ export const useSignaling = (
       ref.on(event, callback);
       activeListenersRef.current.push({ ref, event, callback });
     },
-    []
+    [],
   );
 
   /**
@@ -111,7 +110,7 @@ export const useSignaling = (
       pc: RTCPeerConnection,
       stream: MediaStream,
       enableE2EE: boolean,
-      isRinging: boolean = false
+      isRinging: boolean = false,
     ) => {
       // Guard against concurrent operations
       if (isOperationInProgressRef.current) {
@@ -173,47 +172,45 @@ export const useSignaling = (
         await callDocRef.current.set(callDataToSet);
 
         // Listen for answer or decline
-        addTrackedListener(
-          callDocRef.current,
-          'value',
-          async (snapshot: { val(): unknown }) => {
-            const data = snapshot.val() as Record<string, unknown> | null;
+        addTrackedListener(callDocRef.current, 'value', async (snapshot: { val(): unknown }) => {
+          const data = snapshot.val() as Record<string, unknown> | null;
 
-            if (!data) {
-              if (
-                callStateRef.current !== CallState.IDLE &&
-                callStateRef.current !== CallState.ENDED
-              ) {
-                // Call was removed, hang up
-                onCallStateChange(CallState.ENDED);
-              }
-              return;
-            }
-
-            if (data?.declined) {
-              onCallStateChange(CallState.DECLINED);
-              cleanupSignaling(true);
-              return;
-            }
-
-            if (data?.joinerId && !peerIdRef.current) {
-              onSetPeerId(data.joinerId as string);
-            }
-
+          if (!data) {
             if (
-              data?.answer &&
-              (!pc.currentRemoteDescription ||
-                pc.currentRemoteDescription.sdp !== (data.answer as { sdp: string }).sdp)
+              callStateRef.current !== CallState.IDLE &&
+              callStateRef.current !== CallState.ENDED
             ) {
-              try {
-                const answerDescription = new RTCSessionDescription(data.answer as RTCSessionDescriptionInit);
-                await pc.setRemoteDescription(answerDescription);
-              } catch (error) {
-                console.error('Error setting remote description:', error);
-              }
+              // Call was removed, hang up
+              onCallStateChange(CallState.ENDED);
+            }
+            return;
+          }
+
+          if (data?.declined) {
+            onCallStateChange(CallState.DECLINED);
+            cleanupSignaling(true);
+            return;
+          }
+
+          if (data?.joinerId && !peerIdRef.current) {
+            onSetPeerId(data.joinerId as string);
+          }
+
+          if (
+            data?.answer &&
+            (!pc.currentRemoteDescription ||
+              pc.currentRemoteDescription.sdp !== (data.answer as { sdp: string }).sdp)
+          ) {
+            try {
+              const answerDescription = new RTCSessionDescription(
+                data.answer as RTCSessionDescriptionInit,
+              );
+              await pc.setRemoteDescription(answerDescription);
+            } catch (error) {
+              console.error('Error setting remote description:', error);
             }
           }
-        );
+        });
 
         // Listen for remote ICE candidates
         addTrackedListener(
@@ -226,7 +223,7 @@ export const useSignaling = (
             } catch (error) {
               console.error('Error adding ICE candidate:', error);
             }
-          }
+          },
         );
 
         if (!isRinging) {
@@ -238,14 +235,7 @@ export const useSignaling = (
         onCallStateChange(CallState.IDLE);
       }
     },
-    [
-      onCallStateChange,
-      onSetCallId,
-      onSetPeerId,
-      callStateRef,
-      peerIdRef,
-      addTrackedListener,
-    ]
+    [onCallStateChange, onSetCallId, onSetPeerId, callStateRef, peerIdRef, addTrackedListener],
   );
 
   /**
@@ -258,12 +248,7 @@ export const useSignaling = (
    * @param enableE2EE - Whether E2EE was enabled by caller
    */
   const joinCall = useCallback(
-    async (
-      id: string,
-      pc: RTCPeerConnection,
-      stream: MediaStream,
-      enableE2EE: boolean
-    ) => {
+    async (id: string, pc: RTCPeerConnection, stream: MediaStream, enableE2EE: boolean) => {
       // Guard against concurrent operations
       if (isOperationInProgressRef.current) {
         console.warn('Call operation already in progress, ignoring joinCall');
@@ -316,7 +301,9 @@ export const useSignaling = (
             }
           };
 
-          await pc.setRemoteDescription(new RTCSessionDescription(callData.offer as RTCSessionDescriptionInit));
+          await pc.setRemoteDescription(
+            new RTCSessionDescription(callData.offer as RTCSessionDescriptionInit),
+          );
 
           const answerDescription = await pc.createAnswer();
           await pc.setLocalDescription(answerDescription);
@@ -330,7 +317,9 @@ export const useSignaling = (
           await callDocRef.current.update({ answer, joinerId });
 
           // Remove incoming call notification for joiner
-          const calleeIncomingCallRef = db.ref(`users/${joinerId}/incomingCall`) as DatabaseReference;
+          const calleeIncomingCallRef = db.ref(
+            `users/${joinerId}/incomingCall`,
+          ) as DatabaseReference;
           await calleeIncomingCallRef.remove();
 
           // Listen for offer ICE candidates
@@ -344,47 +333,45 @@ export const useSignaling = (
               } catch (error) {
                 console.error('Error adding ICE candidate:', error);
               }
-            }
+            },
           );
 
           // Listen for reconnection offers
-          addTrackedListener(
-            callDocRef.current,
-            'value',
-            async (snapshot: { val(): unknown }) => {
-              const data = snapshot.val() as Record<string, unknown> | null;
+          addTrackedListener(callDocRef.current, 'value', async (snapshot: { val(): unknown }) => {
+            const data = snapshot.val() as Record<string, unknown> | null;
 
-              if (!data) {
-                if (
-                  callStateRef.current !== CallState.IDLE &&
-                  callStateRef.current !== CallState.ENDED
-                ) {
-                  onCallStateChange(CallState.ENDED);
-                }
-                return;
+            if (!data) {
+              if (
+                callStateRef.current !== CallState.IDLE &&
+                callStateRef.current !== CallState.ENDED
+              ) {
+                onCallStateChange(CallState.ENDED);
               }
+              return;
+            }
 
-              if (data?.offer && (data.offer as { sdp: string }).sdp !== initialOfferSdp) {
-                console.log('Received a new offer for reconnection');
-                onCallStateChange(CallState.RECONNECTING);
-                try {
-                  await pc.setRemoteDescription(new RTCSessionDescription(data.offer as RTCSessionDescriptionInit));
+            if (data?.offer && (data.offer as { sdp: string }).sdp !== initialOfferSdp) {
+              console.log('Received a new offer for reconnection');
+              onCallStateChange(CallState.RECONNECTING);
+              try {
+                await pc.setRemoteDescription(
+                  new RTCSessionDescription(data.offer as RTCSessionDescriptionInit),
+                );
 
-                  const newAnswerDescription = await pc.createAnswer();
-                  await pc.setLocalDescription(newAnswerDescription);
+                const newAnswerDescription = await pc.createAnswer();
+                await pc.setLocalDescription(newAnswerDescription);
 
-                  const newAnswer = {
-                    type: newAnswerDescription.type,
-                    sdp: newAnswerDescription.sdp,
-                  };
+                const newAnswer = {
+                  type: newAnswerDescription.type,
+                  sdp: newAnswerDescription.sdp,
+                };
 
-                  await callDocRef.current?.update({ answer: newAnswer });
-                } catch (error) {
-                  console.error('Error handling reconnection offer:', error);
-                }
+                await callDocRef.current?.update({ answer: newAnswer });
+              } catch (error) {
+                console.error('Error handling reconnection offer:', error);
               }
             }
-          );
+          });
 
           onCallStateChange(CallState.CREATING_ANSWER);
         } else {
@@ -399,14 +386,7 @@ export const useSignaling = (
         onCallStateChange(CallState.IDLE);
       }
     },
-    [
-      onCallStateChange,
-      onSetCallId,
-      onSetPeerId,
-      callStateRef,
-      initiateCall,
-      addTrackedListener,
-    ]
+    [onCallStateChange, onSetCallId, onSetPeerId, callStateRef, initiateCall, addTrackedListener],
   );
 
   /**
@@ -424,7 +404,9 @@ export const useSignaling = (
       try {
         if (peerToRingId) {
           // Remove the incoming call from the peer we were ringing
-          const calleeIncomingCallRef = db.ref(`users/${peerToRingId}/incomingCall`) as DatabaseReference;
+          const calleeIncomingCallRef = db.ref(
+            `users/${peerToRingId}/incomingCall`,
+          ) as DatabaseReference;
           await calleeIncomingCallRef.remove();
         } else {
           // Remove our own incoming call notification
@@ -452,7 +434,7 @@ export const useSignaling = (
 
       onCallStateChange(CallState.IDLE);
     },
-    [onCallStateChange]
+    [onCallStateChange],
   );
 
   /**
@@ -465,12 +447,7 @@ export const useSignaling = (
    * @param enableE2EE - Whether to enable E2EE
    */
   const ringUser = useCallback(
-    async (
-      peer: PinnedEntry,
-      pc: RTCPeerConnection,
-      stream: MediaStream,
-      enableE2EE: boolean
-    ) => {
+    async (peer: PinnedEntry, pc: RTCPeerConnection, stream: MediaStream, enableE2EE: boolean) => {
       if (!peer.peerId) {
         console.error('Cannot ring user without a peer ID');
         return;
@@ -502,7 +479,7 @@ export const useSignaling = (
         declineCall(newCallId, peer.peerId);
       }, RING_TIMEOUT_MS);
     },
-    [onSetPeerId, onSetCallId, initiateCall, declineCall]
+    [onSetPeerId, onSetCallId, initiateCall, declineCall],
   );
 
   /**
@@ -511,36 +488,39 @@ export const useSignaling = (
    *
    * @param keepCallDoc - Whether to keep the call doc (for decline scenarios)
    */
-  const cleanupSignaling = useCallback((keepCallDoc = false) => {
-    // Remove all tracked listeners (RESOURCE LEAK FIX)
-    activeListenersRef.current.forEach(({ ref, event, callback }) => {
-      ref.off(event, callback);
-    });
-    activeListenersRef.current = [];
+  const cleanupSignaling = useCallback(
+    (keepCallDoc = false) => {
+      // Remove all tracked listeners (RESOURCE LEAK FIX)
+      activeListenersRef.current.forEach(({ ref, event, callback }) => {
+        ref.off(event, callback);
+      });
+      activeListenersRef.current = [];
 
-    // Clear ringing timeout
-    if (ringingTimeoutRef.current) {
-      clearTimeout(ringingTimeoutRef.current);
-      ringingTimeoutRef.current = null;
-    }
+      // Clear ringing timeout
+      if (ringingTimeoutRef.current) {
+        clearTimeout(ringingTimeoutRef.current);
+        ringingTimeoutRef.current = null;
+      }
 
-    // Remove call doc if not keeping
-    if (callDocRef.current && !keepCallDoc) {
-      callDocRef.current.remove();
-    }
+      // Remove call doc if not keeping
+      if (callDocRef.current && !keepCallDoc) {
+        callDocRef.current.remove();
+      }
 
-    // Null all refs
-    callDocRef.current = null;
-    answerCandidatesRef.current = null;
-    offerCandidatesRef.current = null;
-    encryptionKeyRef.current = null;
+      // Null all refs
+      callDocRef.current = null;
+      answerCandidatesRef.current = null;
+      offerCandidatesRef.current = null;
+      encryptionKeyRef.current = null;
 
-    // Reset operation flag
-    isOperationInProgressRef.current = false;
+      // Reset operation flag
+      isOperationInProgressRef.current = false;
 
-    // Reset E2EE state
-    onSetE2EEActive(false);
-  }, [onSetE2EEActive]);
+      // Reset E2EE state
+      onSetE2EEActive(false);
+    },
+    [onSetE2EEActive],
+  );
 
   /**
    * Set the operation in progress flag.
