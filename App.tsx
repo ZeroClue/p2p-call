@@ -22,6 +22,11 @@ import { getUserId } from './utils/user';
 import { useDraggable } from './hooks/useDraggable';
 import { usePresence } from './hooks/usePresence';
 import { usePeerStatus } from './hooks/usePeerStatus';
+import { CallContext } from './contexts/CallContext';
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+}
 
 const App: React.FC = () => {
     const { isAuthenticated, isAuthenticating, authError } = useAuth();
@@ -29,7 +34,7 @@ const App: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'new' | 'recent' | 'pinned' | 'tools' | 'about'>('new');
     const [joinInput, setJoinInput] = useState('');
     const [joinInputError, setJoinInputError] = useState<string | null>(null);
-    const [installPrompt, setInstallPrompt] = useState<any>(null);
+    const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
     const [peerToRing, setPeerToRing] = useState<PinnedEntry | null>(null);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isChatVisible, setIsChatVisible] = useState(false);
@@ -78,7 +83,7 @@ const App: React.FC = () => {
     useEffect(() => {
         const handler = (e: Event) => {
             e.preventDefault();
-            setInstallPrompt(e);
+            setInstallPrompt(e as BeforeInstallPromptEvent);
         };
         window.addEventListener('beforeinstallprompt', handler);
         return () => window.removeEventListener('beforeinstallprompt', handler);
@@ -201,6 +206,20 @@ const App: React.FC = () => {
 
     const isConnecting = [CallState.CREATING_OFFER, CallState.WAITING_FOR_ANSWER, CallState.RINGING, CallState.JOINING, CallState.CREATING_ANSWER].includes(callState);
     const showMainPage = [CallState.IDLE, CallState.ENDED, CallState.DECLINED].includes(callState);
+
+    const callContextValue = useMemo(() => ({
+        localStream, remoteStream, connectionState, isMuted, isVideoOff, callState, setCallState,
+        errorMessage, callId, peerId, isE2EEActive, callStats, resolution, setResolution,
+        isRemoteMuted, isRemoteVideoOff, enableE2EE, setEnableE2EE,
+        enterLobby, startCall, joinCall, ringUser, declineCall, toggleMute, toggleVideo, hangUp, reset,
+        setOnChatMessage, sendMessage,
+    }), [
+        localStream, remoteStream, connectionState, isMuted, isVideoOff, callState, setCallState,
+        errorMessage, callId, peerId, isE2EEActive, callStats, resolution, setResolution,
+        isRemoteMuted, isRemoteVideoOff, enableE2EE, setEnableE2EE,
+        enterLobby, startCall, joinCall, ringUser, declineCall, toggleMute, toggleVideo, hangUp, reset,
+        setOnChatMessage, sendMessage,
+    ]);
 
     const tabs: { id: 'new' | 'recent' | 'pinned' | 'tools' | 'about', label: string }[] = [
         { id: 'new', label: 'New Call' },
@@ -359,6 +378,7 @@ const App: React.FC = () => {
     }
 
     return (
+        <CallContext.Provider value={callContextValue}>
         <div className="min-h-screen text-slate-200">
             {showMainPage && (
                 <div className="relative container mx-auto px-4 py-8 md:py-16 flex flex-col items-center gap-10">
@@ -435,6 +455,7 @@ const App: React.FC = () => {
                 </div>
             )}
         </div>
+        </CallContext.Provider>
     );
 };
 

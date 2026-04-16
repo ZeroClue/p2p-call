@@ -31,7 +31,13 @@ export const useCallNotifications = (
     return historyContact?.alias;
   }, [pinned, history]);
 
+  const prevStateRef = useRef<CallState>(CallState.IDLE);
+
   useEffect(() => {
+    // Only act on callState transitions, not callId/peerId changes mid-call
+    if (callState === prevStateRef.current) return;
+    prevStateRef.current = callState;
+
     switch (callState) {
       case CallState.INCOMING_CALL:
         playIncomingSound();
