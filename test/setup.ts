@@ -2,55 +2,93 @@ import '@testing-library/jest-dom';
 import { expect, afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 
-// Cleanup after each test
 afterEach(() => {
   cleanup();
 });
 
 // Mock Firebase
+const mockRef = {
+  on: vi.fn(),
+  off: vi.fn(),
+  set: vi.fn().mockResolvedValue(undefined),
+  update: vi.fn().mockResolvedValue(undefined),
+  remove: vi.fn().mockResolvedValue(undefined),
+  push: vi.fn().mockResolvedValue({ key: 'mock-key' }),
+  child: vi.fn().mockReturnThis(),
+  get: vi.fn().mockResolvedValue({ val: () => null, exists: () => false }),
+};
+
 global.firebase = {
   initializeApp: vi.fn(),
   auth: vi.fn(() => ({
-    onAuthStateChanged: vi.fn(),
-    signInAnonymously: vi.fn().mockResolvedValue({}),
+    onAuthStateChanged: vi.fn((cb: any) => {
+      cb(null);
+      return vi.fn();
+    }),
+    signInAnonymously: vi.fn().mockResolvedValue({ user: { uid: 'test-user-id' } }),
     currentUser: { uid: 'test-user-id' },
   })),
   database: vi.fn(() => ({
-    ref: vi.fn(() => ({
-      on: vi.fn(),
-      off: vi.fn(),
-      set: vi.fn(),
-      update: vi.fn(),
-      remove: vi.fn(),
-      push: vi.fn(),
-    })),
-    ServerValue: { TIMESTAMP: 'timestamp' },
+    ref: vi.fn().mockReturnValue(mockRef),
+    ServerValue: { TIMESTAMP: { '.sv': 'timestamp' } },
   })),
 } as any;
 
 // Mock WebRTC APIs
-global.RTCPeerConnection = vi.fn() as any;
-global.RTCSessionDescription = vi.fn() as any;
-global.RTCIceCandidate = vi.fn() as any;
+const mockPeerConnection = {
+  createOffer: vi.fn().mockResolvedValue({ sdp: 'mock-offer', type: 'offer' }),
+  createAnswer: vi.fn().mockResolvedValue({ sdp: 'mock-answer', type: 'answer' }),
+  setLocalDescription: vi.fn().mockResolvedValue(undefined),
+  setRemoteDescription: vi.fn().mockResolvedValue(undefined),
+  addIceCandidate: vi.fn().mockResolvedValue(undefined),
+  addTrack: vi.fn(),
+  getSenders: vi.fn().mockReturnValue([]),
+  getReceivers: vi.fn().mockReturnValue([]),
+  getStats: vi.fn().mockResolvedValue(new Map()),
+  createDataChannel: vi.fn().mockReturnValue({
+    onopen: null,
+    onclose: null,
+    onmessage: null,
+    close: vi.fn(),
+    send: vi.fn(),
+    readyState: 'open',
+  }),
+  close: vi.fn(),
+  connectionState: 'new',
+  onconnectionstatechange: null,
+  onicecandidate: null,
+  ontrack: null,
+  ondatachannel: null,
+  currentRemoteDescription: null,
+};
+
+global.RTCPeerConnection = vi.fn().mockImplementation(() => mockPeerConnection) as any;
+global.RTCSessionDescription = vi.fn().mockImplementation((init: any) => init) as any;
+global.RTCIceCandidate = vi.fn().mockImplementation((init: any) => init) as any;
 
 // Mock getUserMedia
+const mockStream = {
+  getTracks: () => [],
+  getAudioTracks: () => [{ enabled: true, stop: vi.fn() }],
+  getVideoTracks: () => [{ enabled: true, stop: vi.fn() }],
+};
+
 global.navigator.mediaDevices = {
-  getUserMedia: vi.fn().mockResolvedValue({
-    getTracks: () => [],
-    getAudioTracks: () => [],
-    getVideoTracks: () => [],
-  }),
+  getUserMedia: vi.fn().mockResolvedValue(mockStream),
 } as any;
 
-// Mock window.crypto for E2EE tests
-if (!global.crypto) {
-  global.crypto = {
-    subtle: {
-      generateKey: vi.fn(),
-      exportKey: vi.fn(),
-      importKey: vi.fn(),
-      encrypt: vi.fn(),
-      decrypt: vi.fn(),
-    },
-  } as any;
-}
+// Mock Web Crypto API
+const mockCryptoKey = { type: 'secret', algorithm: { name: 'AES-GCM' } };
+global.crypto = {
+  subtle: {
+    generateKey: vi.fn().mockResolvedValue({ key: mockCryptoKey, rawKey: new ArrayBuffer(32) }),
+    exportKey: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
+    importKey: vi.fn().mockResolvedValue(mockCryptoKey),
+    encrypt: vi.fn().mockResolvedValue(new ArrayBuffer(64)),
+    decrypt: vi.fn().mockResolvedValue(new ArrayBuffer(48)),
+  },
+  getRandomValues: vi.fn((arr: any) => {
+    for (let i = 0; i < arr.length; i++) arr[i] = Math.floor(Math.random() * 256);
+    return arr;
+  }),
+} as any;
