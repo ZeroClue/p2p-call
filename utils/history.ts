@@ -1,4 +1,4 @@
-import { CallHistoryEntry } from '../types';
+import { CallHistoryEntry } from '@/types';
 
 const HISTORY_KEY = 'p2p-call-history';
 const MAX_HISTORY_ITEMS = 20;
