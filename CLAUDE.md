@@ -17,10 +17,12 @@ npm test                               # Run tests (vitest, watch mode by defaul
 npm run test:ui                        # Vitest UI dashboard
 vitest run path/to/test.test.ts        # Run a single test file
 npm run test:coverage                  # Tests with coverage
-npx tsc --noEmit                       # Type check (non-blocking in CI)
+npx tsc --noEmit                       # Type check (requires firebase.ts)
 ```
 
-No local linting/formatting npm scripts are configured. CI runs ESLint and Prettier as non-blocking checks.
+No local linting/formatting npm scripts are configured. CI runs ESLint and Prettier as blocking checks.
+
+Vitest with jsdom environment. Test mocks in `test/setup.ts` cover Firebase (`.child()` chaining), WebRTC (`RTCPeerConnection`), and crypto APIs.
 
 ## Architecture
 
@@ -85,13 +87,6 @@ Reusable SVG icon components live in `components/icons.tsx`. Import from there i
 
 Firebase callbacks (`on('value', ...)`) and WebRTC handlers capture state at registration time. To read current state inside these callbacks, use the sync refs: `callStateRef`, `peerIdRef`, `enableE2EERef`, `isMutedRef`, `isVideoOffRef`, `remoteStreamRef`. Do not read state variables directly in callbacks.
 
-### Configuration
-
-- ICE servers (STUN + TURN) in `constants.ts`
-- Resolution presets in `useWebRTC.ts`: 480p, 720p (default), 1080p
-- Ring timeout: 30 seconds (`RING_TIMEOUT_MS`)
-- Reconnection: exponential backoff (2000ms × attempt), max 3 attempts, caller-only
-
 ## Firebase Setup
 
 1. Copy `firebase.ts.example` to `firebase.ts` and add config
@@ -100,16 +95,6 @@ Firebase callbacks (`on('value', ...)`) and WebRTC handlers capture state at reg
 4. `firebase.ts` is gitignored — never commit credentials
 
 In CI, `firebase.ts` is generated from GitHub Secrets via `scripts/generate-firebase-config.cjs`. `firebase.ts` does not exist locally until generated. Type checking and builds will fail with a missing module error — this is expected without a local config.
-
-## Testing
-
-Vitest with jsdom environment. Test setup in `test/setup.ts` mocks Firebase (with `.child()` chaining), WebRTC (`RTCPeerConnection` with all methods), and crypto APIs. The `@/` path alias is configured in `vitest.config.ts`.
-
-```bash
-npm test                          # Watch mode
-vitest run test/utils/id.test.ts  # Single test
-npm run test:coverage             # With coverage
-```
 
 ## CI/CD
 
@@ -137,3 +122,15 @@ Tailwind CSS with dark theme and glassmorphism effects. Custom animations in `ta
 - HTTPS required in production (enforced in `utils/security.ts`) for `getUserMedia`
 - User IDs are anonymous UUIDs stored in localStorage (`p2p-user-id`)
 - Service worker caching may require hard refresh during development
+
+### App State Rendering
+
+`App.tsx` renders different views based on `callState`:
+- `IDLE`/`ENDED`/`DECLINED` — tabbed main page (New Call, Recent, Pinned, Tools, About)
+- `LOBBY` — media preview with resolution/E2EE toggles
+- `CREATING_OFFER`/`RINGING`/`JOINING`/`WAITING_FOR_ANSWER`/`CREATING_ANSWER` — connecting overlay
+- `CONNECTED`/`RECONNECTING` — fullscreen call with `FloatingVideo` (remote), `LocalVideoPreview` (PiP), `Controls`, `ChatPanel`
+- `INCOMING_CALL` — accept/decline dialog
+- `MEDIA_ERROR` — error screen with retry
+
+Call history and pinned contacts persist in localStorage via `utils/history.ts` and `utils/pins.ts`.
