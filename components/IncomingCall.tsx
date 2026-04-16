@@ -1,5 +1,5 @@
 import React from 'react';
-import { IncomingCall } from '../types';
+import type { IncomingCall } from '../types';
 import { AcceptCallIcon, DeclineCallIcon } from './icons';
 
 interface IncomingCallProps {

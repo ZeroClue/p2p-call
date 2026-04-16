@@ -18,7 +18,7 @@ const mockRef = {
   get: vi.fn().mockResolvedValue({ val: () => null, exists: () => false }),
 };
 
-global.firebase = {
+(globalThis as any).firebase = {
   initializeApp: vi.fn(),
   auth: vi.fn(() => ({
     onAuthStateChanged: vi.fn((cb: any) => {
@@ -73,9 +73,12 @@ const mockStream = {
   getVideoTracks: () => [{ enabled: true, stop: vi.fn() }],
 };
 
-global.navigator.mediaDevices = {
-  getUserMedia: vi.fn().mockResolvedValue(mockStream),
-} as any;
+Object.defineProperty(global.navigator, 'mediaDevices', {
+  value: {
+    getUserMedia: vi.fn().mockResolvedValue(mockStream),
+  },
+  writable: true,
+});
 
 // Mock Web Crypto API
 const mockCryptoKey = { type: 'secret', algorithm: { name: 'AES-GCM' } };

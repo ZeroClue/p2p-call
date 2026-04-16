@@ -10,31 +10,45 @@ describe('Security Utilities', () => {
     });
 
     it('should detect missing getUserMedia', () => {
-      const originalGetUserMedia = navigator.mediaDevices?.getUserMedia;
-      // @ts-ignore
-      delete navigator.mediaDevices;
+      // Create a mock navigator without mediaDevices
+      const mockNavigator = {} as Navigator;
+      const originalWindow = global.window;
+      Object.defineProperty(global.window, 'navigator', {
+        value: mockNavigator,
+        writable: true,
+        configurable: true,
+      });
 
       const result = checkWebRTCSupport();
       expect(result.supported).toBe(false);
       expect(result.missingFeatures).toContain('getUserMedia');
 
       // Restore
-      if (originalGetUserMedia) {
-        navigator.mediaDevices = { getUserMedia: originalGetUserMedia } as any;
-      }
+      Object.defineProperty(global.window, 'navigator', {
+        value: originalWindow.navigator,
+        writable: true,
+        configurable: true,
+      });
     });
 
     it('should detect missing RTCPeerConnection', () => {
-      const original = global.RTCPeerConnection;
-      // @ts-ignore
-      delete global.RTCPeerConnection;
+      const original = (globalThis as any).RTCPeerConnection;
+      Object.defineProperty(globalThis, 'RTCPeerConnection', {
+        value: undefined,
+        writable: true,
+        configurable: true,
+      });
 
       const result = checkWebRTCSupport();
       expect(result.supported).toBe(false);
       expect(result.missingFeatures).toContain('RTCPeerConnection');
 
       // Restore
-      global.RTCPeerConnection = original;
+      Object.defineProperty(globalThis, 'RTCPeerConnection', {
+        value: original,
+        writable: true,
+        configurable: true,
+      });
     });
   });
 
