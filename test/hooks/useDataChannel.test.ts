@@ -24,7 +24,12 @@ describe('useDataChannel', () => {
       ordered: true,
       protocol: '',
       onbufferedamountlow: null,
-    };
+      onclosing: null,
+      onerror: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    } as unknown as RTCDataChannel;
   });
 
   describe('sendMessage', () => {
@@ -45,7 +50,7 @@ describe('useDataChannel', () => {
     });
 
     it('should be no-op when channel is closed', () => {
-      const closedChannel = { ...mockDataChannel, readyState: 'closed' as RTCDataChannelState };
+      const closedChannel = { ...mockDataChannel, readyState: 'closed' as RTCDataChannelState } as RTCDataChannel;
       const { result } = renderHook(() => useDataChannel());
 
       act(() => {

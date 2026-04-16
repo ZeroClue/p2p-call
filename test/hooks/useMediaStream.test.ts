@@ -152,7 +152,7 @@ describe('useMediaStream', () => {
 
       // Mock the getTracks to return the old tracks
       if (firstStream) {
-        firstStream.getTracks = vi.fn(() => [mockOldTrack1, mockOldTrack2]);
+        firstStream.getTracks = vi.fn(() => [mockOldTrack1, mockOldTrack2]) as unknown as () => MediaStreamTrack[];
       }
 
       // Second call
