@@ -2,11 +2,14 @@
   "rules": {
     "calls": {
       "$callId": {
-        ".read": true,
-        ".write": "!data.exists() || (data.child('callerId').val() === auth.uid || data.child('joinerId').val() === auth.uid || data.child('declined').val() === true)",
-        ".validate": "newData.hasChildren(['callerId']) && newData.child('callId').val() === $callId",
+        ".read": "auth != null",
+        ".write": "auth != null && (!data.exists() && newData.hasChildren(['callerId']) || data.child('callerId').val() === auth.uid || data.child('joinerId').val() === auth.uid || (data.exists() && !data.hasChild('answer') && newData.hasChild('answer')))",
+        ".validate": "newData.hasChildren(['callerId'])",
         "callerId": {
-          ".validate": "newData.isString()"
+          ".validate": "newData.isString() && newData.val() === auth.uid"
+        },
+        "callId": {
+          ".validate": "newData.isString() && newData.val() === $callId"
         },
         "joinerId": {
           ".validate": "newData.isString()"
@@ -42,7 +45,7 @@
         "incomingCall": {
           ".validate": "newData.hasChildren(['from', 'callId'])",
           "from": {
-            ".validate": "newData.isString()"
+            ".validate": "newData.isString() && newData.val() === auth.uid"
           },
           "callId": {
             ".validate": "newData.isString()"
@@ -55,7 +58,7 @@
     },
     "status": {
       "$userId": {
-        ".read": true,
+        ".read": "auth != null",
         ".write": "auth != null && auth.uid === $userId",
         ".validate": "newData.hasChildren(['isOnline', 'lastChanged'])",
         "isOnline": {
