@@ -77,6 +77,14 @@ WebRTC data channel sends JSON messages:
 - `useDraggable` — drag-and-drop for floating video
 - `usePinchToZoom` — pinch-to-zoom on remote video stream
 
+### Shared Icons
+
+Reusable SVG icon components live in `components/icons.tsx`. Import from there instead of defining icons locally in component files. FloatingVideo has unique icons that stay local.
+
+### useWebRTC Stale Closure Pattern
+
+Firebase callbacks (`on('value', ...)`) and WebRTC handlers capture state at registration time. To read current state inside these callbacks, use the sync refs: `callStateRef`, `peerIdRef`, `enableE2EERef`, `isMutedRef`, `isVideoOffRef`, `remoteStreamRef`. Do not read state variables directly in callbacks.
+
 ### Configuration
 
 - ICE servers (STUN + TURN) in `constants.ts`
@@ -91,11 +99,11 @@ WebRTC data channel sends JSON messages:
 3. Deploy security rules: `firebase deploy --only database`
 4. `firebase.ts` is gitignored — never commit credentials
 
-In CI, `firebase.ts` is generated from GitHub Secrets via `scripts/generate-firebase-config.cjs`.
+In CI, `firebase.ts` is generated from GitHub Secrets via `scripts/generate-firebase-config.cjs`. `firebase.ts` does not exist locally until generated. Type checking and builds will fail with a missing module error — this is expected without a local config.
 
 ## Testing
 
-Vitest with jsdom environment. Test setup in `test/setup.ts` mocks Firebase and WebRTC APIs.
+Vitest with jsdom environment. Test setup in `test/setup.ts` mocks Firebase (with `.child()` chaining), WebRTC (`RTCPeerConnection` with all methods), and crypto APIs. The `@/` path alias is configured in `vitest.config.ts`.
 
 ```bash
 npm test                          # Watch mode
@@ -105,9 +113,9 @@ npm run test:coverage             # With coverage
 
 ## CI/CD
 
-- **`deploy.yml`**: Auto-deploys to Firebase Hosting on main/master push. PRs get preview deployments (7-day expiry). Generates `firebase.ts` from secrets, runs type check + tests + build.
-- **`pr-check.yml`**: PR checks — test coverage (CodeCov), security audit (npm audit + Snyk), linting/formatting, type check, build verification.
-- **`dependabot.yml`**: Auto-merges patch/minor dependency updates.
+- **`deploy.yml`**: Deploys to Firebase Hosting on main/master push. Uses `npm ci`, `npx vitest run`, blocking `tsc --noEmit`. PRs get preview deployments (7-day expiry).
+- **`pr-check.yml`**: PR checks — tests with coverage, type check, build, security audit (`npm audit`), ESLint, Prettier. All gates are blocking.
+- **`dependabot.yml`**: Auto-merges patch/minor updates after CI passes.
 
 ## Deployment
 
