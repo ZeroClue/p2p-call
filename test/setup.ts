@@ -79,16 +79,23 @@ global.navigator.mediaDevices = {
 
 // Mock Web Crypto API
 const mockCryptoKey = { type: 'secret', algorithm: { name: 'AES-GCM' } };
-global.crypto = {
-  subtle: {
-    generateKey: vi.fn().mockResolvedValue({ key: mockCryptoKey, rawKey: new ArrayBuffer(32) }),
-    exportKey: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
-    importKey: vi.fn().mockResolvedValue(mockCryptoKey),
-    encrypt: vi.fn().mockResolvedValue(new ArrayBuffer(64)),
-    decrypt: vi.fn().mockResolvedValue(new ArrayBuffer(48)),
+if (!global.crypto) {
+  global.crypto = {} as any;
+}
+
+Object.defineProperty(global, 'crypto', {
+  value: {
+    subtle: {
+      generateKey: vi.fn().mockResolvedValue({ key: mockCryptoKey, rawKey: new ArrayBuffer(32) }),
+      exportKey: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
+      importKey: vi.fn().mockResolvedValue(mockCryptoKey),
+      encrypt: vi.fn().mockResolvedValue(new ArrayBuffer(64)),
+      decrypt: vi.fn().mockResolvedValue(new ArrayBuffer(48)),
+    },
+    getRandomValues: vi.fn((arr: any) => {
+      for (let i = 0; i < arr.length; i++) arr[i] = Math.floor(Math.random() * 256);
+      return arr;
+    }),
   },
-  getRandomValues: vi.fn((arr: any) => {
-    for (let i = 0; i < arr.length; i++) arr[i] = Math.floor(Math.random() * 256);
-    return arr;
-  }),
-} as any;
+  writable: true,
+});
