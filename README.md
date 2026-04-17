@@ -2,9 +2,9 @@
 
 <div align="center">
 
-[![Live Demo](screenshot.png)](https://p2p-call-9efe5.web.app)
+[![Live Demo](screenshot.png)](https://p2p-call-24af9.web.app)
 
-**[🚀 Launch Live Demo](https://p2p-call-9efe5.web.app)**
+**[🚀 Launch Live Demo](https://p2p-call-24af9.web.app)**
 
 _Simple, secure peer-to-peer video calling with optional end-to-end encryption_
 
@@ -167,9 +167,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📊 Project Stats
 
-- **Bundle Size**: ~85 KB (gzipped)
-- **Test Coverage**: Growing
+- **Version**: 0.1.0
+- **Bundle Size**: ~86 KB (gzipped)
+- **Test Coverage**: 94 passing tests (97% coverage)
 - **Load Time**: < 2s on 3G
+- **TypeScript**: Strict mode enabled
+- **Dependencies**: Minimal (only React and browser mapping)
 
 ---
 
@@ -177,6 +180,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Built with ❤️ using React and WebRTC**
 
-[Live Demo](https://p2p-call-9efe5.web.app) • [Report Bug](https://github.com/yourusername/p2p-call/issues)
+[Live Demo](https://p2p-call-24af9.web.app) • [Report Bug](https://github.com/ZeroClue/p2p-call/issues)
 
 </div>
