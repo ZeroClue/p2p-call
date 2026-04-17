@@ -16,7 +16,20 @@ vi.mock('../../firebase', () => {
     exists: () => false,
   });
 
-  const createMockRef = (path: string) => ({
+  interface MockRef {
+    _path: string;
+    _lastChild: string;
+    on: typeof mockOn;
+    off: typeof mockOff;
+    set: typeof mockSet;
+    update: typeof mockUpdate;
+    remove: typeof mockRemove;
+    push: typeof mockPush;
+    get: typeof mockGet;
+    child: (childPath: string) => MockRef;
+  }
+
+  const createMockRef = (path: string): MockRef => ({
     _path: path,
     _lastChild: '',
     on: mockOn,
@@ -26,7 +39,7 @@ vi.mock('../../firebase', () => {
     remove: mockRemove,
     push: mockPush,
     get: mockGet,
-    child: vi.fn(function (this: unknown, childPath: string) {
+    child: vi.fn(function (this: MockRef, childPath: string) {
       this._lastChild = childPath;
       return this;
     }),
@@ -265,21 +278,35 @@ describe('useSignaling', () => {
         exists: () => true,
       });
 
-      firebaseModule.db.ref = vi.fn((path: string) => ({
-        _path: path,
-        _lastChild: '',
-        on: vi.fn(),
-        off: vi.fn(),
-        set: vi.fn().mockResolvedValue(undefined),
-        update: vi.fn().mockResolvedValue(undefined),
-        remove: vi.fn().mockResolvedValue(undefined),
-        push: vi.fn().mockResolvedValue({ key: 'mock-key' }),
-        get: mockGet,
-        child: vi.fn(function (this: unknown, childPath: string) {
-          this._lastChild = childPath;
-          return this;
-        }),
-      }));
+      firebaseModule.db.ref = vi.fn((path: string) => {
+        const mockRef: {
+          _path: string;
+          _lastChild: string;
+          on: ReturnType<typeof vi.fn>;
+          off: ReturnType<typeof vi.fn>;
+          set: ReturnType<typeof vi.fn>;
+          update: ReturnType<typeof vi.fn>;
+          remove: ReturnType<typeof vi.fn>;
+          push: ReturnType<typeof vi.fn>;
+          get: ReturnType<typeof vi.fn>;
+          child: ReturnType<typeof vi.fn>;
+        } = {
+          _path: path,
+          _lastChild: '',
+          on: vi.fn(),
+          off: vi.fn(),
+          set: vi.fn().mockResolvedValue(undefined),
+          update: vi.fn().mockResolvedValue(undefined),
+          remove: vi.fn().mockResolvedValue(undefined),
+          push: vi.fn().mockResolvedValue({ key: 'mock-key' }),
+          get: mockGet,
+          child: vi.fn(function (this: typeof mockRef, childPath: string) {
+            this._lastChild = childPath;
+            return this;
+          }),
+        };
+        return mockRef;
+      });
 
       const { result } = renderHook(() =>
         useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
@@ -301,21 +328,35 @@ describe('useSignaling', () => {
         exists: () => false,
       });
 
-      firebaseModule.db.ref = vi.fn((path: string) => ({
-        _path: path,
-        _lastChild: '',
-        on: vi.fn(),
-        off: vi.fn(),
-        set: vi.fn().mockResolvedValue(undefined),
-        update: vi.fn().mockResolvedValue(undefined),
-        remove: vi.fn().mockResolvedValue(undefined),
-        push: vi.fn().mockResolvedValue({ key: 'mock-key' }),
-        get: mockGet,
-        child: vi.fn(function (this: unknown, childPath: string) {
-          this._lastChild = childPath;
-          return this;
-        }),
-      }));
+      firebaseModule.db.ref = vi.fn((path: string) => {
+        const mockRef: {
+          _path: string;
+          _lastChild: string;
+          on: ReturnType<typeof vi.fn>;
+          off: ReturnType<typeof vi.fn>;
+          set: ReturnType<typeof vi.fn>;
+          update: ReturnType<typeof vi.fn>;
+          remove: ReturnType<typeof vi.fn>;
+          push: ReturnType<typeof vi.fn>;
+          get: ReturnType<typeof vi.fn>;
+          child: ReturnType<typeof vi.fn>;
+        } = {
+          _path: path,
+          _lastChild: '',
+          on: vi.fn(),
+          off: vi.fn(),
+          set: vi.fn().mockResolvedValue(undefined),
+          update: vi.fn().mockResolvedValue(undefined),
+          remove: vi.fn().mockResolvedValue(undefined),
+          push: vi.fn().mockResolvedValue({ key: 'mock-key' }),
+          get: mockGet,
+          child: vi.fn(function (this: typeof mockRef, childPath: string) {
+            this._lastChild = childPath;
+            return this;
+          }),
+        };
+        return mockRef;
+      });
 
       const { result } = renderHook(() =>
         useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
@@ -437,24 +478,38 @@ describe('useSignaling', () => {
       const mockOn = vi.fn();
       const mockOff = vi.fn();
 
-      firebaseModule.db.ref = vi.fn((path: string) => ({
-        _path: path,
-        _lastChild: '',
-        on: mockOn,
-        off: mockOff,
-        set: vi.fn().mockResolvedValue(undefined),
-        update: vi.fn().mockResolvedValue(undefined),
-        remove: vi.fn().mockResolvedValue(undefined),
-        push: vi.fn().mockResolvedValue({ key: 'mock-key' }),
-        get: vi.fn().mockResolvedValue({
-          val: () => null,
-          exists: () => false,
-        }),
-        child: vi.fn(function (this: unknown, childPath: string) {
-          this._lastChild = childPath;
-          return this;
-        }),
-      }));
+      firebaseModule.db.ref = vi.fn((path: string) => {
+        const mockRef: {
+          _path: string;
+          _lastChild: string;
+          on: typeof mockOn;
+          off: typeof mockOff;
+          set: ReturnType<typeof vi.fn>;
+          update: ReturnType<typeof vi.fn>;
+          remove: ReturnType<typeof vi.fn>;
+          push: ReturnType<typeof vi.fn>;
+          get: ReturnType<typeof vi.fn>;
+          child: ReturnType<typeof vi.fn>;
+        } = {
+          _path: path,
+          _lastChild: '',
+          on: mockOn,
+          off: mockOff,
+          set: vi.fn().mockResolvedValue(undefined),
+          update: vi.fn().mockResolvedValue(undefined),
+          remove: vi.fn().mockResolvedValue(undefined),
+          push: vi.fn().mockResolvedValue({ key: 'mock-key' }),
+          get: vi.fn().mockResolvedValue({
+            val: () => null,
+            exists: () => false,
+          }),
+          child: vi.fn(function (this: typeof mockRef, childPath: string) {
+            this._lastChild = childPath;
+            return this;
+          }),
+        };
+        return mockRef;
+      });
 
       const { result } = renderHook(() =>
         useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
@@ -487,24 +542,38 @@ describe('useSignaling', () => {
     it('should remove call doc when keepCallDoc is false', async () => {
       const mockRemove = vi.fn().mockResolvedValue(undefined);
 
-      firebaseModule.db.ref = vi.fn((path: string) => ({
-        _path: path,
-        _lastChild: '',
-        on: vi.fn(),
-        off: vi.fn(),
-        set: vi.fn().mockResolvedValue(undefined),
-        update: vi.fn().mockResolvedValue(undefined),
-        remove: mockRemove,
-        push: vi.fn().mockResolvedValue({ key: 'mock-key' }),
-        get: vi.fn().mockResolvedValue({
-          val: () => null,
-          exists: () => false,
-        }),
-        child: vi.fn(function (this: unknown, childPath: string) {
-          this._lastChild = childPath;
-          return this;
-        }),
-      }));
+      firebaseModule.db.ref = vi.fn((path: string) => {
+        const mockRef: {
+          _path: string;
+          _lastChild: string;
+          on: ReturnType<typeof vi.fn>;
+          off: ReturnType<typeof vi.fn>;
+          set: ReturnType<typeof vi.fn>;
+          update: ReturnType<typeof vi.fn>;
+          remove: typeof mockRemove;
+          push: ReturnType<typeof vi.fn>;
+          get: ReturnType<typeof vi.fn>;
+          child: ReturnType<typeof vi.fn>;
+        } = {
+          _path: path,
+          _lastChild: '',
+          on: vi.fn(),
+          off: vi.fn(),
+          set: vi.fn().mockResolvedValue(undefined),
+          update: vi.fn().mockResolvedValue(undefined),
+          remove: mockRemove,
+          push: vi.fn().mockResolvedValue({ key: 'mock-key' }),
+          get: vi.fn().mockResolvedValue({
+            val: () => null,
+            exists: () => false,
+          }),
+          child: vi.fn(function (this: typeof mockRef, childPath: string) {
+            this._lastChild = childPath;
+            return this;
+          }),
+        };
+        return mockRef;
+      });
 
       const { result } = renderHook(() =>
         useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
@@ -535,24 +604,38 @@ describe('useSignaling', () => {
     it('should not remove call doc when keepCallDoc is true', async () => {
       const mockRemove = vi.fn().mockResolvedValue(undefined);
 
-      firebaseModule.db.ref = vi.fn((path: string) => ({
-        _path: path,
-        _lastChild: '',
-        on: vi.fn(),
-        off: vi.fn(),
-        set: vi.fn().mockResolvedValue(undefined),
-        update: vi.fn().mockResolvedValue(undefined),
-        remove: mockRemove,
-        push: vi.fn().mockResolvedValue({ key: 'mock-key' }),
-        get: vi.fn().mockResolvedValue({
-          val: () => null,
-          exists: () => false,
-        }),
-        child: vi.fn(function (this: unknown, childPath: string) {
-          this._lastChild = childPath;
-          return this;
-        }),
-      }));
+      firebaseModule.db.ref = vi.fn((path: string) => {
+        const mockRef: {
+          _path: string;
+          _lastChild: string;
+          on: ReturnType<typeof vi.fn>;
+          off: ReturnType<typeof vi.fn>;
+          set: ReturnType<typeof vi.fn>;
+          update: ReturnType<typeof vi.fn>;
+          remove: typeof mockRemove;
+          push: ReturnType<typeof vi.fn>;
+          get: ReturnType<typeof vi.fn>;
+          child: ReturnType<typeof vi.fn>;
+        } = {
+          _path: path,
+          _lastChild: '',
+          on: vi.fn(),
+          off: vi.fn(),
+          set: vi.fn().mockResolvedValue(undefined),
+          update: vi.fn().mockResolvedValue(undefined),
+          remove: mockRemove,
+          push: vi.fn().mockResolvedValue({ key: 'mock-key' }),
+          get: vi.fn().mockResolvedValue({
+            val: () => null,
+            exists: () => false,
+          }),
+          child: vi.fn(function (this: typeof mockRef, childPath: string) {
+            this._lastChild = childPath;
+            return this;
+          }),
+        };
+        return mockRef;
+      });
 
       const { result } = renderHook(() =>
         useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
@@ -642,24 +725,38 @@ describe('useSignaling', () => {
       const mockOn = vi.fn();
       const mockOff = vi.fn();
 
-      firebaseModule.db.ref = vi.fn((path: string) => ({
-        _path: path,
-        _lastChild: '',
-        on: mockOn,
-        off: mockOff,
-        set: vi.fn().mockResolvedValue(undefined),
-        update: vi.fn().mockResolvedValue(undefined),
-        remove: vi.fn().mockResolvedValue(undefined),
-        push: vi.fn().mockResolvedValue({ key: 'mock-key' }),
-        get: vi.fn().mockResolvedValue({
-          val: () => null,
-          exists: () => false,
-        }),
-        child: vi.fn(function (this: unknown, childPath: string) {
-          this._lastChild = childPath;
-          return this;
-        }),
-      }));
+      firebaseModule.db.ref = vi.fn((path: string) => {
+        const mockRef: {
+          _path: string;
+          _lastChild: string;
+          on: typeof mockOn;
+          off: typeof mockOff;
+          set: ReturnType<typeof vi.fn>;
+          update: ReturnType<typeof vi.fn>;
+          remove: ReturnType<typeof vi.fn>;
+          push: ReturnType<typeof vi.fn>;
+          get: ReturnType<typeof vi.fn>;
+          child: ReturnType<typeof vi.fn>;
+        } = {
+          _path: path,
+          _lastChild: '',
+          on: mockOn,
+          off: mockOff,
+          set: vi.fn().mockResolvedValue(undefined),
+          update: vi.fn().mockResolvedValue(undefined),
+          remove: vi.fn().mockResolvedValue(undefined),
+          push: vi.fn().mockResolvedValue({ key: 'mock-key' }),
+          get: vi.fn().mockResolvedValue({
+            val: () => null,
+            exists: () => false,
+          }),
+          child: vi.fn(function (this: typeof mockRef, childPath: string) {
+            this._lastChild = childPath;
+            return this;
+          }),
+        };
+        return mockRef;
+      });
 
       const { result } = renderHook(() =>
         useSignaling(mockCallbacks, mockCallStateRef, mockPeerIdRef, mockEnableE2EERef),
