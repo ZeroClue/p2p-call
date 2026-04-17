@@ -178,8 +178,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
 
-**Built with ❤️ using React and WebRTC**
-
-[Live Demo](https://p2p-call-24af9.web.app) • [Report Bug](https://github.com/ZeroClue/p2p-call/issues)
+[Live Demo](https://p2p-call-24af9.web.app) • [Report Bug](https://github.com/ZeroClue/p2p-call/issues) • [Alternate Demo](https://p2p-call.kern.web.za)
 
 </div>
