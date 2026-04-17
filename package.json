@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "vercel-build": "node scripts/generate-firebase-config.cjs && vite build",
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
