@@ -1,24 +1,16 @@
 import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useWebRTC } from '../../hooks/useWebRTC';
 import { CallState } from '../../types';
 
-// Mock setTimeout/clearTimeout for ringing
-global.setTimeout = vi.fn((fn: () => void) => {
-  fn();
-  return {} as unknown as NodeJS.Timeout;
-}) as unknown as typeof setTimeout;
-global.clearTimeout = vi.fn() as unknown as typeof clearTimeout;
-
-// Mock setInterval/clearInterval for stats
-global.setInterval = vi.fn((_fn: () => void) => {
-  return {} as unknown as NodeJS.Timeout;
-}) as unknown as typeof setInterval;
-global.clearInterval = vi.fn() as unknown as typeof clearInterval;
-
 describe('useWebRTC', () => {
   beforeEach(() => {
+    vi.useFakeTimers();
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('starts in IDLE state', () => {
