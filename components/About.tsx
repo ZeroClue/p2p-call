@@ -5,7 +5,7 @@ const About: React.FC = () => {
     <div className="w-full max-w-lg p-6 bg-gray-800/50 rounded-lg space-y-6 text-center border border-gray-700">
       <div>
         <h2 className="text-2xl font-bold text-white">P2P Video Call</h2>
-        <p className="text-sm font-mono text-gray-500 mt-1">Version 1.4.0</p>
+        <p className="text-sm font-mono text-gray-500 mt-1">Version 0.1.0</p>
       </div>
 
       <p className="text-gray-300">
