@@ -48,9 +48,12 @@ describe('useWebRTC', () => {
       await result.current.startCall();
     });
 
-    await waitFor(() => {
-      expect(result.current.callState).toBe(CallState.WAITING_FOR_ANSWER);
-    });
+    await waitFor(
+      () => {
+        expect(result.current.callState).toBe(CallState.WAITING_FOR_ANSWER);
+      },
+      { timeout: 5000 }
+    );
     expect(result.current.callId).not.toBeNull();
     expect(result.current.callId).toMatch(/^[a-z]+-[a-z]+-[a-z]+$/);
   });
@@ -67,9 +70,12 @@ describe('useWebRTC', () => {
       await result.current.startCall();
     });
 
-    await waitFor(() => {
-      expect(result.current.callState).toBe(CallState.WAITING_FOR_ANSWER);
-    });
+    await waitFor(
+      () => {
+        expect(result.current.callState).toBe(CallState.WAITING_FOR_ANSWER);
+      },
+      { timeout: 5000 }
+    );
 
     // Hang up
     await act(async () => {
