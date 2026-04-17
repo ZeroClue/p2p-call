@@ -1,16 +1,11 @@
-import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { renderHook, act, waitFor } from '@testing-library/react';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useWebRTC } from '../../hooks/useWebRTC';
 import { CallState } from '../../types';
 
 describe('useWebRTC', () => {
   beforeEach(() => {
-    vi.useFakeTimers();
     vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
   });
 
   it('starts in IDLE state', () => {
@@ -53,7 +48,9 @@ describe('useWebRTC', () => {
       await result.current.startCall();
     });
 
-    expect(result.current.callState).toBe(CallState.WAITING_FOR_ANSWER);
+    await waitFor(() => {
+      expect(result.current.callState).toBe(CallState.WAITING_FOR_ANSWER);
+    });
     expect(result.current.callId).not.toBeNull();
     expect(result.current.callId).toMatch(/^[a-z]+-[a-z]+-[a-z]+$/);
   });
@@ -70,7 +67,9 @@ describe('useWebRTC', () => {
       await result.current.startCall();
     });
 
-    expect(result.current.callState).toBe(CallState.WAITING_FOR_ANSWER);
+    await waitFor(() => {
+      expect(result.current.callState).toBe(CallState.WAITING_FOR_ANSWER);
+    });
 
     // Hang up
     await act(async () => {
@@ -92,7 +91,9 @@ describe('useWebRTC', () => {
       await result.current.startCall();
     });
 
-    expect(result.current.callState).not.toBe(CallState.IDLE);
+    await waitFor(() => {
+      expect(result.current.callState).not.toBe(CallState.IDLE);
+    });
     expect(result.current.callId).not.toBeNull();
 
     // Reset
