@@ -33,7 +33,7 @@ describe('useWebRTC', () => {
     });
   });
 
-  it.skip('starts call and transitions to WAITING_FOR_ANSWER (CI flaky)', async () => {
+  it.skip('starts call and transitions to WAITING_FOR_ANSWER (CI flaky - async timing)', async () => {
     const { result } = renderHook(() => useWebRTC('720p'));
 
     // Enter lobby first to get media
@@ -58,7 +58,7 @@ describe('useWebRTC', () => {
     expect(result.current.callId).toMatch(/^[a-z]+-[a-z]+-[a-z]+$/);
   });
 
-  it.skip('hangs up and transitions to ENDED (CI flaky)', async () => {
+  it.skip('hangs up and transitions to ENDED (CI flaky - async timing)', async () => {
     const { result } = renderHook(() => useWebRTC('720p'));
 
     // Enter lobby and start call
@@ -85,7 +85,7 @@ describe('useWebRTC', () => {
     expect(result.current.callState).toBe(CallState.ENDED);
   });
 
-  it.skip('resets to IDLE state with null values (CI flaky)', async () => {
+  it.skip('resets to IDLE state with null values (CI flaky - async timing)', async () => {
     const { result } = renderHook(() => useWebRTC('720p'));
 
     // Enter lobby and start call
