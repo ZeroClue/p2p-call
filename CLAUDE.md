@@ -106,6 +106,8 @@ In CI, `firebase.ts` is generated from GitHub Secrets via `scripts/generate-fire
 
 ## Deployment
 
+### Firebase Hosting
+
 ```bash
 npm run build && firebase deploy          # Full deploy
 firebase deploy --only database           # Rules only
@@ -113,6 +115,20 @@ firebase deploy --only hosting            # Hosting only
 ```
 
 `firebase.json` configures `dist/` hosting with SPA rewrites and security headers (HSTS, CSP, X-Frame-Options).
+
+### Vercel Deployment
+
+Dual deployment active: Firebase Hosting + Vercel. Both use same Firebase database.
+Vercel automatically deploys on push to main via GitHub integration.
+Environment variables required in Vercel: `FIREBASE_API_KEY`, `FIREBASE_AUTH_DOMAIN`, `FIREBASE_DATABASE_URL`, `FIREBASE_PROJECT_ID`, `FIREBASE_APP_ID`.
+`vercel.json` handles SPA rewrites and security headers (moved from `firebase.json`).
+Build uses `vercel-build` script: generates `firebase.ts` from env vars, then Vite build.
+
+```bash
+npm i -g vercel                 # Install Vercel CLI
+vercel login                    # Authenticate (device flow)
+vercel --yes                    # Deploy
+```
 
 ## Styling
 
@@ -150,9 +166,10 @@ Call history and pinned contacts persist in localStorage via `utils/history.ts` 
 
 Update deployment stats when: version bumps occur, bundle size changes ±10%, or test coverage shifts significantly.
 
-## Deployment Stats (as of v0.1.0)
+## Deployment Stats (as of v0.1.1)
 
-- **Bundle Size**: ~86 KB (gzipped)
+- **Bundle Size**: ~87 KB (gzipped)
 - **Test Coverage**: 94 passing tests (97% coverage)
 - **TypeScript**: Strict mode enabled
 - **Dependencies**: Minimal (only React and browser mapping)
+- **Deployments**: Firebase Hosting + Vercel (dual)
